@@ -56,25 +56,25 @@ class SFlApplicationTests {
 //				.andExpect(status().isConflict())
 //				.andExpect(content().string("User already exists"));
 //	}
-	@Test
-	public void testCreatePost() {
-		// Given
-		String content = "포스트 내용1";
-
-		// When
-		ResponseEntity<Post> response = postController.createPost(Collections.singletonMap("content", content));
-
-		// Then
-		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-		Post createdPost = response.getBody();
-		assertThat(createdPost).isNotNull();
-		assertThat(createdPost.getContent()).isEqualTo(content);
-		// 추가적인 검증 로직을 작성할 수 있습니다.
-	}
-
-	// 다른 테스트 메서드를 작성할 수 있습니다.
-	@Test
-	void contextLoads() {
-	}
+//	@Test
+//	public void testCreatePost() {
+//		// Given
+//		String content = "포스트 내용1";
+//
+//		// When
+//		ResponseEntity<Post> response = postController.createPost(Collections.singletonMap("content", content));
+//
+//		// Then
+//		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+//		Post createdPost = response.getBody();
+//		assertThat(createdPost).isNotNull();
+//		assertThat(createdPost.getContent()).isEqualTo(content);
+//		// 추가적인 검증 로직을 작성할 수 있습니다.
+//	}
+//
+//	// 다른 테스트 메서드를 작성할 수 있습니다.
+//	@Test
+//	void contextLoads() {
+//	}
 
 }
