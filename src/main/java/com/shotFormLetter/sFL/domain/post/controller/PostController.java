@@ -9,7 +9,7 @@ import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
 import com.shotFormLetter.sFL.domain.post.domain.repository.PostRepository;
 import com.shotFormLetter.sFL.domain.post.domain.service.PostService;
 
-import com.shotFormLetter.sFL.domain.post.s3.service.s3Service;
+//import com.shotFormLetter.sFL.domain.post.s3.service.s3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,7 +32,7 @@ public class PostController {
     private final PostService postService;
     private final PostRepository postRepository;
     private final MemberService memberService;
-    private final s3Service s3Service;
+//    private final s3Service s3Service;
 
 
     @PostMapping("/create")
@@ -44,22 +44,11 @@ public class PostController {
                                   @RequestParam("media_reference") List <String> media_reference,
                                   @RequestHeader("X-AUTH-TOKEN") String token){
 
-
             Member tokenMember=memberService.tokenMember(token);
             String userId = memberService.getUserIdFromMember(tokenMember);
             List<String> s3Urls=new ArrayList<>();
             String postId=postService.createPost(title,content,tokenMember,media_reference,userId,openstatus);
             postService.createLink(s3Urls,postId,userId,newImageList,newthumbnailList);
-//            postService.makePost(title,content, tokenMember, s3Urls, media_reference, userId, newImageList);
-
-//            Post createPost=new Post();
-//            String postId=createPost.getPostId().toString();
-//            System.out.println(postId);
-//            s3Urls=s3Service.getUrls(newImageList,userId,s3Urls,postId);
-//            postService.makePost(createPost,title,content,tokenMember,s3Urls,media_reference,userId);
-//            createPost=postService.createPost(title, content, tokenMember, s3Urls,media_reference,userId);
-//            s3Urls = s3Service.getUrls(newImageList,userId,s3Urls);
-//            Post createPost = postService.createPost(title, content, tokenMember, s3Urls,media_reference,userId);
             MessageDto messageDto = new MessageDto();
             messageDto.setMessage("전송 완료");
             return messageDto;
@@ -86,4 +75,8 @@ public class PostController {
         PostInfoDto postInfoDto=postService.openPostDto(postId);
         return postInfoDto;
     }
+//    @PutMapping("/update/{postId}")
+//    public void updatePost(@PathVariable("postId")Long postId,
+//                           @RequestHeader("X-AUTH-TOKEN")String token,
+//                           @RequestParam())
 }

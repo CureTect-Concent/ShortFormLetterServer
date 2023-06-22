@@ -5,8 +5,8 @@ import com.shotFormLetter.sFL.domain.post.domain.dto.PostInfoDto;
 import com.shotFormLetter.sFL.domain.post.domain.dto.ThumbnailDto;
 import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
 import com.shotFormLetter.sFL.domain.post.domain.repository.PostRepository;
-import com.shotFormLetter.sFL.domain.post.s3.service.s3Service;
-import com.shotFormLetter.sFL.domain.post.s3.service.s3Service;
+//import com.shotFormLetter.sFL.domain.post.s3.service.s3Service;
+import com.shotFormLetter.sFL.domain.post.s3.service.s3UploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,10 @@ import java.util.List;
 public class PostServiceImpl implements PostService{
 
     private final PostRepository postRepository;
-    private final s3Service s3Service;
+//    private final s3Service s3Service;
+    private final s3UploadService s3UploadService;
+
+
     @Override
     public String createPost(String title, String content, Member member, List<String> media_reference,String userId,boolean openstatus){
         Post post= new Post();
@@ -40,8 +43,8 @@ public class PostServiceImpl implements PostService{
 
     @Override
     public void createLink(List<String> s3Urls,String postId,String userId,List<MultipartFile> newimageList,List<MultipartFile> newthumbnailList){
-        List<String> getusrls= s3Service.getUrls(newimageList,userId,s3Urls,postId.toString());
-        s3Service.uploadThumbnail(newthumbnailList,userId,s3Urls,postId.toString());
+        List<String> getusrls= s3UploadService.getUrls(newimageList,userId,s3Urls,postId.toString());
+        s3UploadService.uploadThumbnail(newthumbnailList,userId,s3Urls,postId.toString());
         Post post=postRepository.getPostByPostId(Long.parseLong(postId));
         post.setS3Urls(getusrls);
         post=postRepository.save(post);
