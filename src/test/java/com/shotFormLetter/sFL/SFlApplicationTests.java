@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import static org.assertj.core.api.InstanceOfAssertFactories.atomicIntegerFieldUpdater;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -33,6 +34,29 @@ import java.util.jar.JarException;
 @AutoConfigureMockMvc
 class SFlApplicationTests {
 
+
+    @Test
+    public void newJson(){
+        String data="[{'ref':'a', 'type':'VIDEO'}]";
+        String data2="[{'ref':'b', 'type':'IMAGE'}]";
+        try {
+            // geturls를 JSONArray로 변환
+            JSONArray urls = new JSONArray(data);
+
+            // new_media_reference를 JSONArray로 변환
+            JSONArray new_urls = new JSONArray(data2);
+
+            // new_urls의 요소를 urls에 추가
+            for (int i = 0; i < new_urls.length(); i++) {
+                urls.put(new_urls.getJSONObject(i));
+            }
+
+            // 결과 출력
+            System.out.println(urls.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
 //	@Autowired
 //	private PostController postController;
 //	@Autowired

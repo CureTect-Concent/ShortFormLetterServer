@@ -51,11 +51,34 @@ public class PostController {
             List<String> s3Urls=new ArrayList<>();
             String postId=postService.createPost(title,content,tokenMember,media_reference,userId,openstatus);
             postService.createLink(s3Urls,postId,userId,newImageList,newthumbnailList);
-//            postService.createAction(s3Urls,postId,userId,newImageList);
             MessageDto messageDto = new MessageDto();
             messageDto.setMessage("전송 완료");
             return messageDto;
         }
+    @PutMapping("/modify")
+    public ResponseEntity<?> modifyPost(@RequestParam("postId")Long postId,
+                                        @RequestParam("content") String content,
+                                        @RequestParam("title") String title,
+                                        @RequestParam(value = "imageList",required = false) List <MultipartFile> newImageList,
+                                        @RequestParam(value = "thumbnailList",required = false) List <MultipartFile> newthumbnailList,
+                                        @RequestParam("openStatus") boolean openstatus,
+                                        @RequestParam(value="new_media_reference",required = false) String new_media_reference,
+                                        @RequestHeader("X-AUTH-TOKEN")String token){
+
+        Member tokenMember=memberService.tokenMember(token);
+        String userId = memberService.getUserIdFromMember(tokenMember);
+        try {
+            postService.updatePost(postId,content,title, new_media_reference, userId,openstatus, newImageList,newthumbnailList);
+            MessageDto messageDto=new MessageDto();
+            messageDto.setMessage("수정완료");
+            return ResponseEntity.ok(messageDto);
+        } catch (DataNotFoundException e) {
+            MessageDto messageDto=new MessageDto();
+            messageDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
+        }
+    }
+
     @GetMapping("/find")
     public List<ThumbnailDto> getThList(@RequestHeader("X-AUTH-TOKEN") String token){
         Member tokenMember=memberService.tokenMember(token);
@@ -92,6 +115,7 @@ public class PostController {
         MessageDto messageDto=postService.modifyMessage(postId,userId);
         return messageDto;
     }
+
 
     @DeleteMapping("/delete")
     public MessageDto deletePost(@RequestParam("userId")String userId,

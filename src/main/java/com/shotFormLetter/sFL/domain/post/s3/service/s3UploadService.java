@@ -64,8 +64,30 @@ public class s3UploadService {
         }
         return s3Urls;
     }
+    public List<String> updategetUrls(List<MultipartFile> newImageList, String userId, List<String> s3Urls, String postId) {
+        for (MultipartFile file : newImageList) {
+            String key =userId + "/" + postId +"/images/" + file.getOriginalFilename();
+            try {
+                String imageUrl = uploadImage(file,key);
+                s3Urls.add(imageUrl);
+            } catch (Exception e) {
+                throw new IllegalStateException("이미지 전송 실패");
+            }
+        }
+        return s3Urls;
+    }
 
     public void uploadThumbnail(List<MultipartFile> newthumbnailList, String userId, List<String> s3Urls,String postId) {
+        for (MultipartFile file : newthumbnailList) {
+            String key =userId + "/" + postId +"/thumbnail/" +file.getOriginalFilename();
+            try {
+                String imageUrl = uploadImage(file,key);
+            } catch (Exception e) {
+                throw new IllegalStateException("이미지 전송 실패");
+            }
+        }
+    }
+    public void updateThumbnail(List<MultipartFile> newthumbnailList, String userId, List<String> s3Urls,String postId) {
         for (MultipartFile file : newthumbnailList) {
             String key =userId + "/" + postId +"/thumbnail/" +file.getOriginalFilename();
             try {
@@ -78,32 +100,10 @@ public class s3UploadService {
 
 
 
-
-
-
-//    public void deleteImage(List<String> s3Urls) {
-//        for (String s3url : s3Urls){
-//            deleteObjectsUnderPath(s3url);
-//        }
-//    }
-
-//    private String extractPathToDeleteFromImageUrl(String imageUrl) {
-//        String[] parts = imageUrl.split("/");
-//        int index = parts.length - 4; // UserId 이전까지의 경로를 추출하려면 이 값을 조정해야 합니다.
-//        StringBuilder pathBuilder = new StringBuilder();
-//
-//        for (int i = 0; i <= index; i++) {
-//            pathBuilder.append(parts[i]).append("/");
-//            System.out.println(pathBuilder);
-//        }
-//
-//        return pathBuilder.toString();
-//    }
-
     public void deleteaction(String userId,String postId){
         String key= userId+ "/" + postId;
         deleteImage(key);
-    };
+    }
     public void deleteList(List<String> s3urls) {
         for(String urls : s3urls){
             String imageurls = urls.substring(s3baseUrl.length());
@@ -123,24 +123,7 @@ public class s3UploadService {
                 .build();
         s3Client.deleteObject(deleteRequest);
     }
-//    private void deleteObjectsUnderPath(String pathToDelete) {
-//        ListObjectsRequest request = ListObjectsRequest.builder()
-//                .bucket(bucketName)
-//                .prefix(pathToDelete)
-//                .build();
-//
-//        ListObjectsResponse response = s3Client.listObjects(request);
-//        List<S3Object> objectsToDelete = response.contents();
-//
-//        for (S3Object object : objectsToDelete) {
-//            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
-//                    .bucket(bucketName)
-//                    .key(object.key())
-//                    .build();
-//
-//            s3Client.deleteObject(deleteRequest);
-//        }
-//    }
+
 }
 
 

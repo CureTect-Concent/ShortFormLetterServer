@@ -1,6 +1,8 @@
 package com.shotFormLetter.sFL.domain.post.domain.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.post.domain.dto.MediaDto;
@@ -57,14 +59,44 @@ public class PostServiceImpl implements PostService{
         post.setS3Urls(getusrls);
         post=postRepository.save(post);
     }
-//    @Override
-//    public void createAction(List<String> s3Urls,String postId,String userId,List<MultipartFile> newimageList){
-//        List<String> getusrls= s3UploadService.getUrls(newimageList,userId,s3Urls,postId.toString());
-//        s3UploadService.uploadThumbnail(newthumbnailList,userId,s3Urls,postId.toString());
-//        Post post=postRepository.getPostByPostId(Long.parseLong(postId));
-//        post.setS3Urls(getusrls);
-//        post=postRepository.save(post);
-//    }
+
+    @Override
+    public Post updatePost(Long postId,String content,String title, String new_media_reference,
+                           String userId,boolean openstauts, List <MultipartFile> newImageList, List <MultipartFile> newthumbnailList){
+        Post post =postRepository.getPostByPostId(postId);
+        if(post==null){
+            throw new IllegalStateException("게시글 조회 안됨");
+        }
+        List<String> geturls=post.getS3Urls();
+        geturls=s3UploadService.updategetUrls(newImageList,userId,geturls,postId.toString());
+        s3UploadService.uploadThumbnail(newthumbnailList,userId,geturls,postId.toString());
+
+        String new_reference=post.getMedia_reference();
+        new_reference=getNewReference(new_reference,new_media_reference);
+        post.setContent(content);
+        post.setTitle(title);
+        post.setOpenStatus(openstauts);
+        post.setMedia_reference(new_reference);
+        post.setS3Urls(geturls);
+        postRepository.save(post);
+        return post;
+    }
+    @Override
+    public String getNewReference(String new_reference,String new_meida_reference){
+        try {
+            // geturls를 JSONArray로 변환
+            JSONArray urls = new JSONArray(new_reference);
+            JSONArray new_urls = new JSONArray(new_meida_reference);
+            for (int i = 0; i < new_urls.length(); i++) {
+                urls.put(new_urls.getJSONObject(i));
+            }
+            return urls.toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return new_reference;
+    }
+
     @Override
     public List<ThumbnailDto> getThumbnailList(String userId){
         List<Post> posts=postRepository.getPostByUserId(userId);
@@ -99,22 +131,6 @@ public class PostServiceImpl implements PostService{
         postInfoDto.setLocalDateTime(post.getCreatedAt());;
         return postInfoDto;
     }
-//    @Override
-//    public List<String> makeMediaInfo(String media,List<String> s3urls){
-//        List<String> mediaInfo=new ArrayList<>();
-//        JSONArray jsonArray=new JSONArray(media);
-//		try{
-//			for(int i=0; i<jsonArray.length(); i++){
-//				JSONObject jsonObject=jsonArray.getJSONObject(i);
-//                String url=s3urls.get(i);
-//				jsonObject.put("s3url",url);
-//                mediaInfo.add(jsonObject.toString());
-//			}
-//		}catch (JSONException e){
-//			e.printStackTrace();
-//		}
-//        return mediaInfo;
-//    }
 
     @Override
     public List<MediaDto> make(String media, List<String> s3urls){
@@ -196,7 +212,7 @@ public class PostServiceImpl implements PostService{
             messageDto.setMessage("공개설정 수정 필요함");
         } else{
             String urlId = post.getPostId().toString();
-            messageDto.setMessage("https://localhost:8080/"+urlId);
+            messageDto.setMessage("http://192.168.1.50:3001/letter/"+urlId);
         }
         return messageDto;
     }

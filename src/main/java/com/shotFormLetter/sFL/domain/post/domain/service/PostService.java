@@ -18,8 +18,12 @@ public interface PostService {
 
     List<ThumbnailDto> getThumbnailList(String userId);
 
+
+    Post updatePost(Long postId,String content,String title, String new_media_reference,String userId,boolean openstauts,
+                    List <MultipartFile> newImageList, List <MultipartFile> newthumbnailList);
     PostInfoDto getPostInfo(Long postId);
 
+    String getNewReference(String geturls,String new_meida_reference);
     PostInfoDto openPostDto(Long postId);
     void createLink(List<String> s3Urls,String postId,String userId,List<MultipartFile> newimageList,List<MultipartFile> newthumbnailList);
 //    void createAction(List<String> s3Urls,String postId,String userId,List<MultipartFile> newimageList);
