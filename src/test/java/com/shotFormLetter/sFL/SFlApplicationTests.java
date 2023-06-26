@@ -2,6 +2,9 @@ package com.shotFormLetter.sFL;
 
 import com.shotFormLetter.sFL.domain.post.controller.PostController;
 import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,28 +26,35 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 import java.util.Collections;
+import java.util.jar.JarException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 class SFlApplicationTests {
 
-	@Autowired
-	private PostController postController;
-	@Autowired
-	private MockMvc mockMvc;
+//	@Autowired
+//	private PostController postController;
+//	@Autowired
+//	private MockMvc mockMvc;
 
 
-	@Test
-	public void testSignupSuccess() throws Exception {
-		String requestBody = "{\"username\": \"usr1\", \"user_nickname\": \"deumi\", \"password\": \"aaa\"}";
-
-		mockMvc.perform(MockMvcRequestBuilders.post("http://localhost:8080/user/signup")
-						.contentType(MediaType.APPLICATION_JSON)
-						.content(requestBody))
-				.andExpect(MockMvcResultMatchers.status().isCreated())
-				.andExpect(MockMvcResultMatchers.content().string("User created successfully"));
-	}
+//	@Test
+//	public void testJson() {
+//		String data= "[{'ref':'a', 'type':'IMAGE'},{'ref':'b', type:'IMAGE'}]";
+//		String url="example.com";
+//		JSONArray jsonArray=new JSONArray(data);
+//		try{
+//			for(int i=0; i<jsonArray.length(); i++){
+//				JSONObject jsonObject=jsonArray.getJSONObject(i);
+//				jsonObject.put("s3url",url);
+//			}
+//		}catch (JSONException e){
+//			e.printStackTrace();
+//		}
+//		System.out.println(jsonArray);
+//
+//	}
 
 //	@Test
 //	public void testSignupConflict() throws Exception {

@@ -35,8 +35,7 @@ public class Post {
     private List<String> s3Urls;
 
     @Column(name="media_reference")
-    @ElementCollection
-    private List<String> media_reference;
+    private String media_reference;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

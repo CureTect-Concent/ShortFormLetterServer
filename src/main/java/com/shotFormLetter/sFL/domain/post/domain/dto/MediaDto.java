@@ -5,7 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class MessageDto {
-    private String message;
-
+public class MediaDto {
+    private String ref;
+    private String s3url;
+    private String type;
 }

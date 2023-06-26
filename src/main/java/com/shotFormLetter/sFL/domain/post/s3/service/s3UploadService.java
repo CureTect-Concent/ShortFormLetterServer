@@ -6,14 +6,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +24,11 @@ public class s3UploadService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucketName;
 
+    @Value("${s3.base-url}")
+    private String s3baseUrl;
+
+
+
     private final S3Client s3Client;
 
     public String uploadImage(MultipartFile imageFile, String key) {
@@ -31,8 +36,6 @@ public class s3UploadService {
                 .bucket(bucketName)
                 .key(key)
                 .build();
-
-
         try {
             RequestBody requestBody = RequestBody.fromInputStream(imageFile.getInputStream(), imageFile.getSize());
             PutObjectResponse response = s3Client.putObject(request, requestBody);
@@ -67,11 +70,77 @@ public class s3UploadService {
             String key =userId + "/" + postId +"/thumbnail/" +file.getOriginalFilename();
             try {
                 String imageUrl = uploadImage(file,key);
-                s3Urls.add(imageUrl);
             } catch (Exception e) {
                 throw new IllegalStateException("이미지 전송 실패");
             }
         }
     }
 
+
+
+
+
+
+//    public void deleteImage(List<String> s3Urls) {
+//        for (String s3url : s3Urls){
+//            deleteObjectsUnderPath(s3url);
+//        }
+//    }
+
+//    private String extractPathToDeleteFromImageUrl(String imageUrl) {
+//        String[] parts = imageUrl.split("/");
+//        int index = parts.length - 4; // UserId 이전까지의 경로를 추출하려면 이 값을 조정해야 합니다.
+//        StringBuilder pathBuilder = new StringBuilder();
+//
+//        for (int i = 0; i <= index; i++) {
+//            pathBuilder.append(parts[i]).append("/");
+//            System.out.println(pathBuilder);
+//        }
+//
+//        return pathBuilder.toString();
+//    }
+
+    public void deleteaction(String userId,String postId){
+        String key= userId+ "/" + postId;
+        deleteImage(key);
+    };
+    public void deleteList(List<String> s3urls) {
+        for(String urls : s3urls){
+            String imageurls = urls.substring(s3baseUrl.length());
+            String extension = imageurls.substring(imageurls.lastIndexOf('.'));
+            String thumbnailUrls = imageurls.replace("images", "thumbnail");
+            String deletethumbnail = thumbnailUrls.replace(extension, ".jpg");
+            deleteImage(imageurls);
+            deleteImage(deletethumbnail);
+        }
+    }
+
+    public void deleteImage(String urls){
+        String objectKey = urls;
+        DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(objectKey)
+                .build();
+        s3Client.deleteObject(deleteRequest);
+    }
+//    private void deleteObjectsUnderPath(String pathToDelete) {
+//        ListObjectsRequest request = ListObjectsRequest.builder()
+//                .bucket(bucketName)
+//                .prefix(pathToDelete)
+//                .build();
+//
+//        ListObjectsResponse response = s3Client.listObjects(request);
+//        List<S3Object> objectsToDelete = response.contents();
+//
+//        for (S3Object object : objectsToDelete) {
+//            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+//                    .bucket(bucketName)
+//                    .key(object.key())
+//                    .build();
+//
+//            s3Client.deleteObject(deleteRequest);
+//        }
+//    }
 }
+
+

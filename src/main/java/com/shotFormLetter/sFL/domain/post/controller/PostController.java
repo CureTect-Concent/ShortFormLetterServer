@@ -1,5 +1,6 @@
 package com.shotFormLetter.sFL.domain.post.controller;
 
+import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.service.MemberService;
 import com.shotFormLetter.sFL.domain.post.domain.dto.MessageDto;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,7 +43,7 @@ public class PostController {
                                   @RequestParam("imageList") List <MultipartFile> newImageList,
                                   @RequestParam("thumbnailList") List <MultipartFile> newthumbnailList,
                                   @RequestParam("openStatus") boolean openstatus,
-                                  @RequestParam("media_reference") List <String> media_reference,
+                                  @RequestParam("media_reference") String media_reference,
                                   @RequestHeader("X-AUTH-TOKEN") String token){
 
             Member tokenMember=memberService.tokenMember(token);
@@ -49,6 +51,7 @@ public class PostController {
             List<String> s3Urls=new ArrayList<>();
             String postId=postService.createPost(title,content,tokenMember,media_reference,userId,openstatus);
             postService.createLink(s3Urls,postId,userId,newImageList,newthumbnailList);
+//            postService.createAction(s3Urls,postId,userId,newImageList);
             MessageDto messageDto = new MessageDto();
             messageDto.setMessage("전송 완료");
             return messageDto;
@@ -71,12 +74,34 @@ public class PostController {
     }
 
     @GetMapping("/open/{id}")
-    public PostInfoDto openPost(@PathVariable("id")Long postId){
-        PostInfoDto postInfoDto=postService.openPostDto(postId);
-        return postInfoDto;
+    public ResponseEntity<?> openPost(@PathVariable("id") Long postId) {
+        try {
+            PostInfoDto postInfoDto = postService.openPostDto(postId);
+            return ResponseEntity.ok(postInfoDto);
+        } catch (DataNotFoundException e) {
+            MessageDto messageDto=new MessageDto();
+            messageDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
+        }
     }
-//    @PutMapping("/update/{postId}")
-//    public void updatePost(@PathVariable("postId")Long postId,
-//                           @RequestHeader("X-AUTH-TOKEN")String token,
-//                           @RequestParam())
+
+    @GetMapping("/urls")
+    public MessageDto updatePost(@RequestParam("postId")Long postId, @RequestHeader("X-AUTH-TOKEN")String token){
+        Member tokenMember=memberService.tokenMember(token);
+        String userId = memberService.getUserIdFromMember(tokenMember);
+        MessageDto messageDto=postService.modifyMessage(postId,userId);
+        return messageDto;
+    }
+
+    @DeleteMapping("/delete")
+    public MessageDto deletePost(@RequestParam("userId")String userId,
+                           @RequestParam("postId")Long postId,
+                           @RequestHeader("X-AUTH-TOKEN")String token){
+        Member tokenMember=memberService.tokenMember(token);
+        if(tokenMember.getUsername().equals(userId)){
+            return postService.deletePost(postId,userId);
+        } else {
+            return postService.getMessage();
+        }
+    }
 }

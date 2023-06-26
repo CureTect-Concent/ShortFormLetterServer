@@ -10,4 +10,5 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Integer> {
     List<Post> getPostByUserId(String userId);
     Post getPostByPostId(Long postId);
+
 }
