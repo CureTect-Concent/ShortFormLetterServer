@@ -43,6 +43,7 @@ public class Post {
     @Column(name="author")
     private String userId;
 
+
     @Column(name="open_status")
     private Boolean openStatus;
 }

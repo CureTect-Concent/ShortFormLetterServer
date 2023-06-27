@@ -4,6 +4,7 @@ import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.service.MemberService;
 import com.shotFormLetter.sFL.domain.post.domain.dto.MessageDto;
+import com.shotFormLetter.sFL.domain.post.domain.dto.MusicListDto;
 import com.shotFormLetter.sFL.domain.post.domain.dto.PostInfoDto;
 import com.shotFormLetter.sFL.domain.post.domain.dto.ThumbnailDto;
 import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
@@ -11,6 +12,7 @@ import com.shotFormLetter.sFL.domain.post.domain.repository.PostRepository;
 import com.shotFormLetter.sFL.domain.post.domain.service.PostService;
 
 //import com.shotFormLetter.sFL.domain.post.s3.service.s3Service;
+import com.shotFormLetter.sFL.domain.post.s3.service.s3UploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -34,7 +36,7 @@ public class PostController {
     private final PostService postService;
     private final PostRepository postRepository;
     private final MemberService memberService;
-//    private final s3Service s3Service;
+    private final s3UploadService s3UploadService;
 
 
     @PostMapping("/create")
@@ -114,6 +116,13 @@ public class PostController {
         String userId = memberService.getUserIdFromMember(tokenMember);
         MessageDto messageDto=postService.modifyMessage(postId,userId);
         return messageDto;
+    }
+
+    @GetMapping("/music")
+    public MusicListDto getList(@RequestHeader("X-AUTH-TOKEN")String token){
+        Member tokenMember=memberService.tokenMember(token);
+        String userId = memberService.getUserIdFromMember(tokenMember);
+        return s3UploadService.getMusicList();
     }
 
 

@@ -1,5 +1,6 @@
 package com.shotFormLetter.sFL.domain.post.s3.service;
 
+import com.shotFormLetter.sFL.domain.post.domain.dto.MusicListDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -122,6 +123,19 @@ public class s3UploadService {
                 .key(objectKey)
                 .build();
         s3Client.deleteObject(deleteRequest);
+    }
+
+    public MusicListDto getMusicList(){
+        MusicListDto musicListDto=new MusicListDto();
+        ListObjectsV2Request request = ListObjectsV2Request.builder()
+                .bucket(bucketName)
+                .prefix("music/")
+                .build();
+        ListObjectsV2Response response = s3Client.listObjectsV2(request);
+        for (S3Object s3Object : response.contents()) {
+            musicListDto.getUrls().add(s3Object.key());
+        }
+        return musicListDto;
     }
 
 }
