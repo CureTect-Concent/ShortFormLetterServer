@@ -43,6 +43,8 @@ public class Post {
     @Column(name="author")
     private String userId;
 
+    @Column(name="music_info")
+    private Integer musicInfo;
 
     @Column(name="open_status")
     private Boolean openStatus;

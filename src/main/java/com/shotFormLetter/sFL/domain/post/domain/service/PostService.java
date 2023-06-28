@@ -14,12 +14,12 @@ import java.util.List;
 
 public interface PostService {
 
-    String createPost(String title, String content, Member tokenMember,String media_reference,String userId,boolean openstauts);
+    String createPost(String title, String content, Member tokenMember,String media_reference,Integer musicId,String userId,boolean openstauts);
 
     List<ThumbnailDto> getThumbnailList(String userId);
 
 
-    Post updatePost(Long postId,String content,String title, String new_media_reference,String userId,boolean openstauts,
+    Post updatePost(Long postId,String content,String title, String new_media_reference,Integer musicId,String userId,boolean openstauts,
                     List <MultipartFile> newImageList, List <MultipartFile> newthumbnailList);
     PostInfoDto getPostInfo(Long postId);
 

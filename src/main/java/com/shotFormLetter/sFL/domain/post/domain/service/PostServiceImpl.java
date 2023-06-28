@@ -5,6 +5,10 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
+import com.shotFormLetter.sFL.domain.music.domain.dto.MusicInfo;
+import com.shotFormLetter.sFL.domain.music.domain.entity.Music;
+import com.shotFormLetter.sFL.domain.music.domain.repository.MusicRepository;
+import com.shotFormLetter.sFL.domain.music.domain.service.MusicService;
 import com.shotFormLetter.sFL.domain.post.domain.dto.MediaDto;
 import com.shotFormLetter.sFL.domain.post.domain.dto.MessageDto;
 import com.shotFormLetter.sFL.domain.post.domain.dto.PostInfoDto;
@@ -34,16 +38,19 @@ public class PostServiceImpl implements PostService{
 
     private final PostRepository postRepository;
     private final s3UploadService s3UploadService;
+    private final MusicRepository musicRepository;
+    private final MusicService musicService;
 
 
     @Override
-    public String createPost(String title, String content, Member member, String media_reference,String userId,boolean openstatus){
+    public String createPost(String title, String content, Member member, String media_reference,Integer musicId,String userId,boolean openstatus){
         Post post= new Post();
         post.setTitle(title);
         post.setContent(content);
         post.setMember(member);
         post.setUserId(userId);
         post.setMedia_reference(media_reference);
+        post.setMusicInfo(musicId);
         post.setCreatedAt(LocalDateTime.now());
         post.setOpenStatus(openstatus);
         post=postRepository.save(post);
@@ -61,7 +68,7 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public Post updatePost(Long postId,String content,String title, String new_media_reference,
+    public Post updatePost(Long postId,String content,String title, String new_media_reference,Integer musicId,
                            String userId,boolean openstauts, List <MultipartFile> newImageList, List <MultipartFile> newthumbnailList){
         Post post =postRepository.getPostByPostId(postId);
         if(post==null){
@@ -77,6 +84,7 @@ public class PostServiceImpl implements PostService{
         post.setTitle(title);
         post.setOpenStatus(openstauts);
         post.setMedia_reference(new_reference);
+        post.setMusicInfo(musicId);
         post.setS3Urls(geturls);
         postRepository.save(post);
         return post;
@@ -115,6 +123,8 @@ public class PostServiceImpl implements PostService{
     @Override
     public PostInfoDto getPostInfo(Long postId){
         Post post=postRepository.getPostByPostId(postId);
+        Music music =musicRepository.getMusicByMusicNumber(post.getMusicInfo());
+        MusicInfo musicInfo=musicService.getUserMusicInfo(music.getMusicNumber());
         if(post==null){
             throw new IllegalStateException("게시글 조회 안됨");
         }
@@ -127,6 +137,7 @@ public class PostServiceImpl implements PostService{
         postInfoDto.setTitle(post.getTitle());
         postInfoDto.setContent(post.getContent());
         postInfoDto.setMediaDto(mediaDtos);
+        postInfoDto.setMusicInfo(musicInfo);
         postInfoDto.setOpenstatus(post.getOpenStatus());
         postInfoDto.setLocalDateTime(post.getCreatedAt());;
         return postInfoDto;
@@ -157,13 +168,14 @@ public class PostServiceImpl implements PostService{
     @Override
     public PostInfoDto openPostDto(Long postId){
         Post post=postRepository.getPostByPostId(postId);
+        Music music =musicRepository.getMusicByMusicNumber(post.getMusicInfo());
+        MusicInfo musicInfo=musicService.getUserMusicInfo(music.getMusicNumber());
         if(post==null){
             throw new DataNotFoundException("게시글 조회 안됨");
 //            throw new IllegalStateException("게시글 조회 안됨");
         }
         if(post.getOpenStatus()==Boolean.FALSE){
             throw new DataNotFoundException("접근권한 없음");
-//            throw new IllegalStateException("접근권한 없음");
         }
         String media=post.getMedia_reference();
         List<String> s3urls=post.getS3Urls();
@@ -174,6 +186,7 @@ public class PostServiceImpl implements PostService{
         postInfoDto.setTitle(post.getTitle());
         postInfoDto.setContent(post.getContent());
         postInfoDto.setMediaDto(mediaDtos);
+        postInfoDto.setMusicInfo(musicInfo);
         postInfoDto.setOpenstatus(post.getOpenStatus());
         postInfoDto.setLocalDateTime(post.getCreatedAt());;
         return postInfoDto;
