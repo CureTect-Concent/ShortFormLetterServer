@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
+import com.shotFormLetter.sFL.domain.member.repository.MemberRepository;
 import com.shotFormLetter.sFL.domain.music.domain.dto.MusicInfo;
 import com.shotFormLetter.sFL.domain.music.domain.entity.Music;
 import com.shotFormLetter.sFL.domain.music.domain.repository.MusicRepository;
@@ -42,6 +43,7 @@ public class PostServiceImpl implements PostService{
     private final MusicService musicService;
 
 
+
     @Override
     public String createPost(String title, String content, Member member, String media_reference,Integer musicId,String userId,boolean openstatus){
         Post post= new Post();
@@ -53,6 +55,7 @@ public class PostServiceImpl implements PostService{
         post.setMusicInfo(musicId);
         post.setCreatedAt(LocalDateTime.now());
         post.setOpenStatus(openstatus);
+        post.setView(0);
         post=postRepository.save(post);
         String postId = post.getPostId().toString();
         return postId;
@@ -86,11 +89,15 @@ public class PostServiceImpl implements PostService{
         post.setMedia_reference(new_reference);
         post.setMusicInfo(musicId);
         post.setS3Urls(geturls);
+        post.setView(post.getView());
         postRepository.save(post);
         return post;
     }
     @Override
     public String getNewReference(String new_reference,String new_meida_reference){
+        if (new_meida_reference==null){
+            return new_reference;
+        }
         try {
             // geturls를 JSONArray로 변환
             JSONArray urls = new JSONArray(new_reference);
@@ -101,8 +108,8 @@ public class PostServiceImpl implements PostService{
             return urls.toString();
         } catch (JSONException e) {
             e.printStackTrace();
+            return new_reference;
         }
-        return new_reference;
     }
 
     @Override
@@ -123,11 +130,13 @@ public class PostServiceImpl implements PostService{
     @Override
     public PostInfoDto getPostInfo(Long postId){
         Post post=postRepository.getPostByPostId(postId);
-        Music music =musicRepository.getMusicByMusicNumber(post.getMusicInfo());
-        MusicInfo musicInfo=musicService.getUserMusicInfo(music.getMusicNumber());
         if(post==null){
             throw new IllegalStateException("게시글 조회 안됨");
         }
+        Integer view=post.getView();
+        post.setView(view+1);
+        Music music =musicRepository.getMusicByMusicNumber(post.getMusicInfo());
+        MusicInfo musicInfo = music != null ? musicService.getUserMusicInfo(music.getMusicNumber()) : null;
         String media=post.getMedia_reference();
         List<String> s3urls=post.getS3Urls();
         List<MediaDto> mediaDtos= make(media,s3urls);
@@ -139,7 +148,10 @@ public class PostServiceImpl implements PostService{
         postInfoDto.setMediaDto(mediaDtos);
         postInfoDto.setMusicInfo(musicInfo);
         postInfoDto.setOpenstatus(post.getOpenStatus());
-        postInfoDto.setLocalDateTime(post.getCreatedAt());;
+        postInfoDto.setUserProfile(post.getMember().getProfile());
+        postInfoDto.setView(post.getView()+1);
+        postInfoDto.setLocalDateTime(post.getCreatedAt());
+        postRepository.save(post);
         return postInfoDto;
     }
 
@@ -152,7 +164,9 @@ public class PostServiceImpl implements PostService{
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 String url = s3urls.get(i);
+                System.out.println(url);
                 jsonObject.put("s3url", url);
+                System.out.println(jsonObject);
 
                 MediaDto mediaDto = objectMapper.readValue(jsonObject.toString(), MediaDto.class);
                 MediaDtos.add(mediaDto);
@@ -168,8 +182,6 @@ public class PostServiceImpl implements PostService{
     @Override
     public PostInfoDto openPostDto(Long postId){
         Post post=postRepository.getPostByPostId(postId);
-        Music music =musicRepository.getMusicByMusicNumber(post.getMusicInfo());
-        MusicInfo musicInfo=musicService.getUserMusicInfo(music.getMusicNumber());
         if(post==null){
             throw new DataNotFoundException("게시글 조회 안됨");
 //            throw new IllegalStateException("게시글 조회 안됨");
@@ -177,6 +189,10 @@ public class PostServiceImpl implements PostService{
         if(post.getOpenStatus()==Boolean.FALSE){
             throw new DataNotFoundException("접근권한 없음");
         }
+        Integer view=post.getView();
+        post.setView(view+1);
+        Music music =musicRepository.getMusicByMusicNumber(post.getMusicInfo());
+        MusicInfo musicInfo = music != null ? musicService.getUserMusicInfo(music.getMusicNumber()) : null;
         String media=post.getMedia_reference();
         List<String> s3urls=post.getS3Urls();
         List<MediaDto> mediaDtos= make(media,s3urls);
@@ -187,8 +203,11 @@ public class PostServiceImpl implements PostService{
         postInfoDto.setContent(post.getContent());
         postInfoDto.setMediaDto(mediaDtos);
         postInfoDto.setMusicInfo(musicInfo);
+        postInfoDto.setUserProfile(post.getMember().getProfile());
+        postInfoDto.setView(post.getView()+1);
         postInfoDto.setOpenstatus(post.getOpenStatus());
-        postInfoDto.setLocalDateTime(post.getCreatedAt());;
+        postInfoDto.setLocalDateTime(post.getCreatedAt());
+        postRepository.save(post);
         return postInfoDto;
     }
 
@@ -225,7 +244,7 @@ public class PostServiceImpl implements PostService{
             messageDto.setMessage("공개설정 수정 필요함");
         } else{
             String urlId = post.getPostId().toString();
-            messageDto.setMessage("http://192.168.1.50:3001/letter/"+urlId);
+            messageDto.setMessage("http://192.168.1.7:3000/letter/"+urlId);
         }
         return messageDto;
     }
