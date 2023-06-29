@@ -34,7 +34,7 @@ public class Post {
     @CollectionTable(name = "post_s3_urls", joinColumns = @JoinColumn(name = "post_id"))
     private List<String> s3Urls;
 
-    @Column(name="media_reference")
+    @Column(name="media_reference", length=10000)
     private String media_reference;
 
     @Column(name = "created_at")
@@ -48,4 +48,7 @@ public class Post {
 
     @Column(name="open_status")
     private Boolean openStatus;
+
+    @Column(name="view")
+    private Integer view=0;
 }

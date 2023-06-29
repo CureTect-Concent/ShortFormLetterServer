@@ -1,5 +1,6 @@
 package com.shotFormLetter.sFL.domain.post.s3.service;
 
+import com.shotFormLetter.sFL.domain.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -107,6 +108,17 @@ public class s3UploadService {
             throw new IllegalStateException("이미지 전송 실패");
         }
         return musicUrl;
+    }
+
+    public String uploadProfile(MultipartFile musicFile, Member member){
+        String userProfile="";
+        String key=member.getUserId()+"/profile/"+ musicFile.getOriginalFilename();
+        try {
+            userProfile = uploadImage(musicFile,key);
+        } catch (Exception e) {
+            throw new IllegalStateException("이미지 전송 실패");
+        }
+        return userProfile;
     }
 
 

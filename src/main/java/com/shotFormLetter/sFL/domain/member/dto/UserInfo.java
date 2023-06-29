@@ -5,6 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TokenUser {
-    private String token;
+public class UserInfo {
+    private String userName;
+    private Long Id;
+    private String userProfile;
 }

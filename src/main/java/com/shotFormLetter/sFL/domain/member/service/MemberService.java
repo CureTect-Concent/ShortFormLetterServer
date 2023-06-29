@@ -4,13 +4,16 @@ package com.shotFormLetter.sFL.domain.member.service;
 import com.shotFormLetter.sFL.domain.member.dto.LoginDto;
 import com.shotFormLetter.sFL.domain.member.dto.MemberDto;
 import com.shotFormLetter.sFL.domain.member.dto.TokenUser;
+import com.shotFormLetter.sFL.domain.member.dto.UserInfo;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.repository.MemberRepository;
 import com.shotFormLetter.sFL.domain.member.token.JwtTokenProvider;
+import com.shotFormLetter.sFL.domain.post.s3.service.s3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.util.Collections;
@@ -22,6 +25,7 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
+    private final s3UploadService s3UploadService;
 
     @Transactional
     public Long join(MemberDto memberDto){
@@ -38,6 +42,7 @@ public class MemberService {
                 .userName(memberDto.getUserName())
                 .roles(Collections.singletonList("ROLE_USER"))
                 .password(passwordEncoder.encode(memberDto.getPassword()))
+                .profile(null)
                 .build();
         return memberRepository.save(member).getId();
     }
@@ -53,8 +58,6 @@ public class MemberService {
         String token = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
         TokenUser tokenUser =new TokenUser();
         tokenUser.setToken(token);
-        tokenUser.setUserName(member.getUserId());
-        tokenUser.setId(member.getId());
         return tokenUser;
     }
 
@@ -70,6 +73,21 @@ public class MemberService {
 
     public String getUserIdFromMember(Member member) {
         return member.getUsername();
+    }
+
+    public void changeProfile(MultipartFile profileImage,Member member,String userName){
+        String link=s3UploadService.uploadProfile(profileImage,member);
+
+        member.setUserName(userName);
+        member.setProfile(link);
+        memberRepository.save(member);
+    }
+    public UserInfo getUserInfo(Member tokenMember){
+        UserInfo userInfo=new UserInfo();
+        userInfo.setUserName(tokenMember.getUserId());
+        userInfo.setId(tokenMember.getId());
+        userInfo.setUserProfile(tokenMember.getProfile());
+        return userInfo;
     }
 }
 

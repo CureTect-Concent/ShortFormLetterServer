@@ -1,11 +1,11 @@
 package com.shotFormLetter.sFL.domain.music.domain.service;
 
 import com.shotFormLetter.sFL.domain.music.domain.dto.MusicInfo;
+
 import com.shotFormLetter.sFL.domain.music.domain.dto.MusicList;
 import com.shotFormLetter.sFL.domain.music.domain.entity.Music;
 import com.shotFormLetter.sFL.domain.music.domain.repository.MusicRepository;
 import com.shotFormLetter.sFL.domain.post.s3.service.s3UploadService;
-import io.swagger.models.auth.In;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -39,7 +39,7 @@ public class PostController {
                                   @RequestParam("thumbnailList") List <MultipartFile> newthumbnailList,
                                   @RequestParam("openStatus") boolean openstatus,
                                   @RequestParam("media_reference") String media_reference,
-                                  @RequestParam(value = "musicId")Integer musicId,
+                                  @RequestParam(value = "musicId",required = false)Integer musicId,
                                   @RequestHeader("X-AUTH-TOKEN") String token){
 
             Member tokenMember=memberService.tokenMember(token);
@@ -53,14 +53,14 @@ public class PostController {
         }
 
     @PutMapping("/modify")
-    public ResponseEntity<?> modifyPost(@RequestParam("postId")Long postId,
-                                        @RequestParam("content") String content,
-                                        @RequestParam("title") String title,
-                                        @RequestParam(value = "imageList",required = false) List <MultipartFile> newImageList,
-                                        @RequestParam(value = "thumbnailList",required = false) List <MultipartFile> newthumbnailList,
-                                        @RequestParam("openStatus") boolean openstatus,
-                                        @RequestParam(value="new_media_reference",required = false) String new_media_reference,
-                                        @RequestParam(value = "musicId")Integer musicId,
+    public ResponseEntity<?> modifyPost(@RequestParam(value = "postId",required = false)Long postId,
+                                        @RequestParam(value = "content",required = false) String content,
+                                        @RequestParam(value = "title",required = false) String title,
+                                        @RequestParam(value = "imageList") List <MultipartFile> newImageList,
+                                        @RequestParam(value = "thumbnailList") List <MultipartFile> newthumbnailList,
+                                        @RequestParam(value="new_media_reference") String new_media_reference,
+                                        @RequestParam(value = "openStatus",required = false) boolean openstatus,
+                                        @RequestParam(value = "musicId",required = false)Integer musicId,
                                         @RequestHeader("X-AUTH-TOKEN")String token){
 
         Member tokenMember=memberService.tokenMember(token);
@@ -113,13 +113,6 @@ public class PostController {
         MessageDto messageDto=postService.modifyMessage(postId,userId);
         return messageDto;
     }
-
-//    @GetMapping("/music")
-//    public MusicListDto getList(@RequestHeader("X-AUTH-TOKEN")String token){
-//        Member tokenMember=memberService.tokenMember(token);
-//        String userId = memberService.getUserIdFromMember(tokenMember);
-//        return s3UploadService.getMusicList();
-//    }
 
 
     @DeleteMapping("/delete")
