@@ -1,6 +1,7 @@
 package com.shotFormLetter.sFL.domain.member.service;
 
 
+import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import com.shotFormLetter.sFL.domain.member.dto.LoginDto;
 import com.shotFormLetter.sFL.domain.member.dto.MemberDto;
 import com.shotFormLetter.sFL.domain.member.dto.TokenUser;
@@ -29,13 +30,22 @@ public class MemberService {
 
     @Transactional
     public Long join(MemberDto memberDto){
+        if (memberDto.getUserName().length()<=3){
+            throw new DataNotFoundException("이름은 4자부터 가능합니다.");
+        }
+        if (memberDto.getUserId().length()<5){
+            throw new DataNotFoundException("Id는 5자부터 가능합니다.");
+        }
+        if (memberDto.getPassword().length()<6){
+            throw new DataNotFoundException("비밀번호는 6자부터 가능합니다.");
+        }
         Optional<Member> existingMember = memberRepository.findByUserId(memberDto.getUserId());
         if (existingMember.isPresent()) {
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+            throw new DataNotFoundException("이미 사용 중인 아이디입니다.");
         }
         Optional<Member> existingNickname = memberRepository.findByUserName(memberDto.getUserName());
         if (existingNickname.isPresent()) {
-            throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
+            throw new DataNotFoundException("이미 사용 중인 닉네임입니다.");
         }
         Member member = Member.builder()
                 .userId(memberDto.getUserId())
@@ -76,9 +86,27 @@ public class MemberService {
     }
 
     public void changeProfile(MultipartFile profileImage,Member member,String userName){
-        String link=s3UploadService.uploadProfile(profileImage,member);
-
+        Member isMember= memberRepository.getByUserName(userName);
+        if(isMember.getUserId().equals(userName) || userName.isEmpty()){
+            throw new DataNotFoundException("중복된 이름입니다.");
+        }
+        String link = s3UploadService.uploadProfile(profileImage, member);
         member.setUserName(userName);
+        member.setProfile(link);
+        memberRepository.save(member);
+    }
+    public void changeName(Member member,String userName){
+        Member isMember= memberRepository.getByUserName(userName);
+        if(isMember.getUserId().equals(userName)){
+            throw new DataNotFoundException("중복된 이름입니다.");
+        } else {
+            member.setUserName(userName);
+            memberRepository.save(member);
+        }
+    }
+
+    public void changeImage(Member member,MultipartFile userImageFile){
+        String link = s3UploadService.uploadProfile(userImageFile, member);
         member.setProfile(link);
         memberRepository.save(member);
     }

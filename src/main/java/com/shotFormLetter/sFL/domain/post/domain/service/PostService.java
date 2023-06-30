@@ -25,7 +25,7 @@ public interface PostService {
 
     String getNewReference(String geturls,String new_meida_reference);
     PostInfoDto openPostDto(Long postId);
-    void createLink(List<String> s3Urls,String postId,String userId,List<MultipartFile> newimageList,List<MultipartFile> newthumbnailList);
+    void createLink(List<String> s3Urls,String postId,String userId,String id,List<MultipartFile> newimageList,List<MultipartFile> newthumbnailList);
 //    void createAction(List<String> s3Urls,String postId,String userId,List<MultipartFile> newimageList);
     MessageDto deletePost(Long getPostId,String userId);
 
@@ -34,5 +34,5 @@ public interface PostService {
     public List<MediaDto> make(String media,List<String> s3urls);
     MessageDto getMessage();
 
-    MessageDto modifyMessage(Long getPostId,String userId);
+    MessageDto urlMessage(Long getPostId,String userId);
 }

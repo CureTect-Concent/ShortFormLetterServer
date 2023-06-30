@@ -62,9 +62,9 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public void createLink(List<String> s3Urls,String postId,String userId,List<MultipartFile> newimageList,List<MultipartFile> newthumbnailList){
-        List<String> getusrls= s3UploadService.getUrls(newimageList,userId,s3Urls,postId.toString());
-        s3UploadService.uploadThumbnail(newthumbnailList,userId,s3Urls,postId.toString());
+    public void createLink(List<String> s3Urls,String postId,String userId,String id,List<MultipartFile> newimageList,List<MultipartFile> newthumbnailList){
+        List<String> getusrls= s3UploadService.getUrls(newimageList,s3Urls,postId,id);
+        s3UploadService.uploadThumbnail(newthumbnailList,userId,s3Urls,postId,id);
         Post post=postRepository.getPostByPostId(Long.parseLong(postId));
         post.setS3Urls(getusrls);
         post=postRepository.save(post);
@@ -77,10 +77,14 @@ public class PostServiceImpl implements PostService{
         if(post==null){
             throw new IllegalStateException("게시글 조회 안됨");
         }
+        String id=post.getMember().getId().toString();
         List<String> geturls=post.getS3Urls();
-        geturls=s3UploadService.updategetUrls(newImageList,userId,geturls,postId.toString());
-        s3UploadService.uploadThumbnail(newthumbnailList,userId,geturls,postId.toString());
-
+        if(newImageList!=null && newthumbnailList!=null && new_media_reference!=null){
+            geturls=s3UploadService.updategetUrls(newImageList,userId,geturls,postId.toString(),id);
+            s3UploadService.uploadThumbnail(newthumbnailList,userId,geturls,postId.toString(),id);
+        } else{
+            geturls=geturls;
+        }
         String new_reference=post.getMedia_reference();
         new_reference=getNewReference(new_reference,new_media_reference);
         post.setContent(content);
@@ -96,6 +100,9 @@ public class PostServiceImpl implements PostService{
     @Override
     public String getNewReference(String new_reference,String new_meida_reference){
         if (new_meida_reference==null){
+            return new_reference;
+        }
+        if (new_reference==null){
             return new_reference;
         }
         try {
@@ -139,7 +146,12 @@ public class PostServiceImpl implements PostService{
         MusicInfo musicInfo = music != null ? musicService.getUserMusicInfo(music.getMusicNumber()) : null;
         String media=post.getMedia_reference();
         List<String> s3urls=post.getS3Urls();
-        List<MediaDto> mediaDtos= make(media,s3urls);
+        List<MediaDto> mediaDtos=new ArrayList<>();
+        if(s3urls.isEmpty()){
+            mediaDtos=null;
+        } else{
+            mediaDtos= make(media,s3urls);
+        }
         PostInfoDto postInfoDto =new PostInfoDto();
         postInfoDto.setPostId(post.getPostId());
         postInfoDto.setUsername(post.getMember().getUserId());
@@ -195,7 +207,12 @@ public class PostServiceImpl implements PostService{
         MusicInfo musicInfo = music != null ? musicService.getUserMusicInfo(music.getMusicNumber()) : null;
         String media=post.getMedia_reference();
         List<String> s3urls=post.getS3Urls();
-        List<MediaDto> mediaDtos= make(media,s3urls);
+        List<MediaDto> mediaDtos=new ArrayList<>();
+        if(s3urls.isEmpty()){
+            mediaDtos=null;
+        } else{
+            mediaDtos= make(media,s3urls);
+        }
         PostInfoDto postInfoDto =new PostInfoDto();
         postInfoDto.setPostId(post.getPostId());
         postInfoDto.setUsername(post.getMember().getUserId());
@@ -234,7 +251,7 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public MessageDto modifyMessage(Long getPostId,String userId){
+    public MessageDto urlMessage(Long getPostId,String userId){
         Post post=postRepository.getPostByPostId(getPostId);
         System.out.println("결과:"+post);
         MessageDto messageDto=new MessageDto();
@@ -244,7 +261,7 @@ public class PostServiceImpl implements PostService{
             messageDto.setMessage("공개설정 수정 필요함");
         } else{
             String urlId = post.getPostId().toString();
-            messageDto.setMessage("http://192.168.1.7:3000/letter/"+urlId);
+            messageDto.setMessage("https://shared.concents.io/letter/"+urlId);
         }
         return messageDto;
     }

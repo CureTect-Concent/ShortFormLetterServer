@@ -53,9 +53,9 @@ public class s3UploadService {
         return imageUrl;
     }
 
-    public List<String> getUrls(List<MultipartFile> newImageList, String userId, List<String> s3Urls, String postId) {
+    public List<String> getUrls(List<MultipartFile> newImageList,  List<String> s3Urls, String postId,String id) {
         for (MultipartFile file : newImageList) {
-            String key =userId + "/" + postId +"/images/" + file.getOriginalFilename();
+            String key =id + "/" + postId +"/images/" + file.getOriginalFilename();
             try {
                 String imageUrl = uploadImage(file,key);
                 s3Urls.add(imageUrl);
@@ -65,9 +65,9 @@ public class s3UploadService {
         }
         return s3Urls;
     }
-    public List<String> updategetUrls(List<MultipartFile> newImageList, String userId, List<String> s3Urls, String postId) {
+    public List<String> updategetUrls(List<MultipartFile> newImageList, String userId, List<String> s3Urls, String postId,String id) {
         for (MultipartFile file : newImageList) {
-            String key =userId + "/" + postId +"/images/" + file.getOriginalFilename();
+            String key =id + "/" + postId +"/images/" + file.getOriginalFilename();
             try {
                 String imageUrl = uploadImage(file,key);
                 s3Urls.add(imageUrl);
@@ -78,9 +78,9 @@ public class s3UploadService {
         return s3Urls;
     }
 
-    public void uploadThumbnail(List<MultipartFile> newthumbnailList, String userId, List<String> s3Urls,String postId) {
+    public void uploadThumbnail(List<MultipartFile> newthumbnailList, String userId, List<String> s3Urls,String postId,String id) {
         for (MultipartFile file : newthumbnailList) {
-            String key =userId + "/" + postId +"/thumbnail/" +file.getOriginalFilename();
+            String key =id + "/" + postId +"/thumbnail/" +file.getOriginalFilename();
             try {
                 String imageUrl = uploadImage(file,key);
             } catch (Exception e) {
@@ -111,13 +111,17 @@ public class s3UploadService {
     }
 
     public String uploadProfile(MultipartFile musicFile, Member member){
-        String userProfile="";
-        String key=member.getUserId()+"/profile/"+ musicFile.getOriginalFilename();
-        try {
-            userProfile = uploadImage(musicFile,key);
-        } catch (Exception e) {
-            throw new IllegalStateException("이미지 전송 실패");
+        System.out.println(musicFile.getOriginalFilename()+"이름");
+        if (musicFile==null){
+            return null;
         }
+        String key=member.getId()+"/profile/"+ musicFile.getOriginalFilename();
+        String userProfile = uploadImage(musicFile,key);
+//        try {
+//            userProfile = uploadImage(musicFile,key);
+//        } catch (Exception e) {
+//            throw new IllegalStateException("이미지 전송 실패");
+//        }
         return userProfile;
     }
 

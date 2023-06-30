@@ -33,33 +33,36 @@ public class PostController {
 
 
     @PostMapping("/create")
-    public MessageDto createPost (@RequestParam("title") String title,
+    public MessageDto createPost (@RequestParam(value = "title") String title,
                                   @RequestParam("content") String content,
-                                  @RequestParam("imageList") List <MultipartFile> newImageList,
-                                  @RequestParam("thumbnailList") List <MultipartFile> newthumbnailList,
+                                  @RequestParam(value = "imageList",required = false) List <MultipartFile> newImageList,
+                                  @RequestParam(value = "thumbnailList",required = false) List <MultipartFile> newthumbnailList,
                                   @RequestParam("openStatus") boolean openstatus,
-                                  @RequestParam("media_reference") String media_reference,
+                                  @RequestParam(value = "media_reference",required = false) String media_reference,
                                   @RequestParam(value = "musicId",required = false)Integer musicId,
                                   @RequestHeader("X-AUTH-TOKEN") String token){
 
             Member tokenMember=memberService.tokenMember(token);
             String userId = memberService.getUserIdFromMember(tokenMember);
+            String id=tokenMember.getId().toString();
             List<String> s3Urls=new ArrayList<>();
             String postId=postService.createPost(title,content,tokenMember,media_reference,musicId,userId,openstatus);
-            postService.createLink(s3Urls,postId,userId,newImageList,newthumbnailList);
+            if (newImageList!=null && newthumbnailList!=null){
+                postService.createLink(s3Urls,postId,userId,id,newImageList,newthumbnailList);
+            }
             MessageDto messageDto = new MessageDto();
             messageDto.setMessage("전송 완료");
             return messageDto;
         }
 
     @PutMapping("/modify")
-    public ResponseEntity<?> modifyPost(@RequestParam(value = "postId",required = false)Long postId,
-                                        @RequestParam(value = "content",required = false) String content,
-                                        @RequestParam(value = "title",required = false) String title,
-                                        @RequestParam(value = "imageList") List <MultipartFile> newImageList,
-                                        @RequestParam(value = "thumbnailList") List <MultipartFile> newthumbnailList,
-                                        @RequestParam(value="new_media_reference") String new_media_reference,
-                                        @RequestParam(value = "openStatus",required = false) boolean openstatus,
+    public ResponseEntity<?> modifyPost(@RequestParam(value = "postId")Long postId,
+                                        @RequestParam(value = "content") String content,
+                                        @RequestParam(value = "title") String title,
+                                        @RequestParam(value = "imageList",required = false) List <MultipartFile> newImageList,
+                                        @RequestParam(value = "thumbnailList",required = false) List <MultipartFile> newthumbnailList,
+                                        @RequestParam(value="new_media_reference",required = false) String new_media_reference,
+                                        @RequestParam(value = "openStatus") boolean openstatus,
                                         @RequestParam(value = "musicId",required = false)Integer musicId,
                                         @RequestHeader("X-AUTH-TOKEN")String token){
 
@@ -110,7 +113,7 @@ public class PostController {
     public MessageDto getUrl(@RequestParam("postId")Long postId, @RequestHeader("X-AUTH-TOKEN")String token){
         Member tokenMember=memberService.tokenMember(token);
         String userId = memberService.getUserIdFromMember(tokenMember);
-        MessageDto messageDto=postService.modifyMessage(postId,userId);
+        MessageDto messageDto=postService.urlMessage(postId,userId);
         return messageDto;
     }
 
