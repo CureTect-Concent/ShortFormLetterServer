@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CONCENT_DB_URL=${{ secrets.CONCENT_DB_URL }}
       DRIVER_CLASS=${{ secrets.DRIVER_CLASS }}
 #      CONCENT_USERNAME=${{ secrets.CONCENT_USERNAME }}
 #      CONCENT_PASSWORD=${{ secrets.CONCENT_PASSWORD }}
