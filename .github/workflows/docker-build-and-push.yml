@@ -16,6 +16,8 @@ jobs:
       AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
       S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
       AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+      CONCENT_USERNAME: ${{ secrets.CONCENT_USERNAME }}
+      CONCENT_PASSWORD: ${{ secrets.CONCENT_PASSWORD }}
       PORT: ${{ secrets.PORT }}
       S3_BASE_URL: ${{ secrets.S3_BASE_URL }}
 
@@ -32,7 +34,8 @@ jobs:
           echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env.local
           echo "AWS_S3_REGION=$AWS_S3_REGION" >> .env.local
           echo "PORT=$PORT" >> .env.local
-          echo "S3_BASE_URL=$S3_BASE_URL" >> .env.local
+          echo "CONCENT_USERNAME=$CONCENT_USERNAME" >> .env.local
+          echo "CONCENT_PASSWORD=$CONCENT_PASSWORD" >> .env.local
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
