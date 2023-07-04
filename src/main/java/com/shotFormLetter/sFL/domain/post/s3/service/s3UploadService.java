@@ -88,7 +88,7 @@ public class s3UploadService {
             }
         }
     }
-    public void updateThumbnail(List<MultipartFile> newthumbnailList, String userId, List<String> s3Urls,String postId) {
+    public void updateThumbnail(List<MultipartFile> newthumbnailList, String userId,String postId) {
         for (MultipartFile file : newthumbnailList) {
             String key =userId + "/" + postId +"/thumbnail/" +file.getOriginalFilename();
             try {

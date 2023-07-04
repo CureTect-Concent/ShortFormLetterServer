@@ -67,16 +67,16 @@ public class PostController {
 
         Member tokenMember=memberService.tokenMember(token);
         String userId = memberService.getUserIdFromMember(tokenMember);
-        try {
-            postService.updatePost(postId,content,title, new_media_reference,musicId, userId,openstatus, newImageList,newthumbnailList);
-            MessageDto messageDto=new MessageDto();
-            messageDto.setMessage("수정완료");
-            return ResponseEntity.ok(messageDto);
-        } catch (DataNotFoundException e) {
-            MessageDto messageDto=new MessageDto();
-            messageDto.setMessage(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-        }
+            try {
+                postService.updatePost(postId,content,title, new_media_reference,musicId, userId,openstatus, newImageList,newthumbnailList);
+                MessageDto messageDto=new MessageDto();
+                messageDto.setMessage("수정완료");
+                return ResponseEntity.ok(messageDto);
+            } catch (DataNotFoundException e) {
+                MessageDto messageDto=new MessageDto();
+                messageDto.setMessage(e.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
+            }
     }
 
     @GetMapping("/find")

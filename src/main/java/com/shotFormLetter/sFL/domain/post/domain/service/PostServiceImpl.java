@@ -76,6 +76,7 @@ public class PostServiceImpl implements PostService{
     public Post updatePost(Long postId,String content,String title, String new_media_reference,Integer musicId,
                            String userId,boolean openstauts, List <MultipartFile> newImageList, List <MultipartFile> newthumbnailList){
         Post post =postRepository.getPostByPostId(postId);
+        String post_id=post.getPostUk().toString();
         if(post==null){
             throw new IllegalStateException("게시글 조회 안됨");
         }
@@ -83,16 +84,14 @@ public class PostServiceImpl implements PostService{
         List<String> geturls=post.getS3Urls();
         if(newImageList!=null && newthumbnailList!=null && new_media_reference!=null){
             geturls=s3UploadService.updategetUrls(newImageList,userId,geturls,postId.toString(),id);
-            s3UploadService.uploadThumbnail(newthumbnailList,userId,geturls,postId.toString(),id);
-        } else{
-            geturls=geturls;
+            s3UploadService.updateThumbnail(newthumbnailList,post_id,id);
         }
-        String new_reference=post.getMedia_reference();
-        new_reference=getNewReference(new_reference,new_media_reference);
+        String now_reference=post.getMedia_reference();
+        now_reference=getNewReference(now_reference,new_media_reference);
         post.setContent(content);
         post.setTitle(title);
         post.setOpenStatus(openstauts);
-        post.setMedia_reference(new_reference);
+        post.setMedia_reference(now_reference);
         post.setMusicInfo(musicId);
         post.setS3Urls(geturls);
         post.setView(post.getView());
@@ -103,9 +102,8 @@ public class PostServiceImpl implements PostService{
     public String getNewReference(String new_reference,String new_meida_reference){
         if (new_meida_reference==null){
             return new_reference;
-        }
-        if (new_reference==null){
-            return new_reference;
+        } else if (new_reference==null){
+            return new_meida_reference;
         }
         try {
             // geturls를 JSONArray로 변환
