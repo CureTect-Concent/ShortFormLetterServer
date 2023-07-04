@@ -26,8 +26,6 @@ jobs:
         run: |
           echo "CONCENT_DB_URL=$CONCENT_DB_URL" >> .env.local
           echo "DRIVER_CLASS=$DRIVER_CLASS" >> .env.local
-#          echo "CONCENT_USERNAME=$CONCENT_USERNAME" >> .env.local
-#          echo "CONCENT_PASSWORD=$CONCENT_PASSWORD" >> .env.local
           echo "AWS_ACCESS_KEY=$AWS_ACCESS_KEY" >> .env.local
           echo "AWS_SECRET_KEY=$AWS_SECRET_KEY" >> .env.local
           echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env.local
