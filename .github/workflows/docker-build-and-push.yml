@@ -25,6 +25,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Generate env Parameter
+        run: |
+          echo "CONCENT_DB_URL=$CONCENT_DB_URL" >> .env.local
+          echo "DRIVER_CLASS=$DRIVER_CLASS" >> .env.local
+          echo "CONCENT_USERNAME=$CONCENT_USERNAME" >> .env.local
+          echo "CONCENT_PASSWORD=$CONCENT_PASSWORD" >> .env.local
+          echo "AWS_ACCESS_KEY=$AWS_ACCESS_KEY" >> .env.local
+          echo "AWS_SECRET_KEY=$AWS_SECRET_KEY" >> .env.local
+          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env.local
+          echo "AWS_S3_REGION=$AWS_S3_REGION" >> .env.local
+          echo "PORT=$PORT" >> .env.local
+          echo "S3_BASE_URL=$S3_BASE_URL" >> .env.local
+#        run: echo "CONCENT_DB_URL=$CONCENT_DB_URL" >>.env.local
+
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
