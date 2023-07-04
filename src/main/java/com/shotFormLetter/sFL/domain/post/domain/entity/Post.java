@@ -19,6 +19,9 @@ public class Post {
     @Column(name = "post_id")
     private Long postId;
 
+    @Column(name="post_uk")
+    private String postUk;
+
     @Column(name = "content", columnDefinition = "text")
     private String content;
 

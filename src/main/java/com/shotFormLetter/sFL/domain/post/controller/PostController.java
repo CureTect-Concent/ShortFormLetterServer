@@ -3,10 +3,9 @@ package com.shotFormLetter.sFL.domain.post.controller;
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.service.MemberService;
-import com.shotFormLetter.sFL.domain.post.domain.dto.MessageDto;
-import com.shotFormLetter.sFL.domain.post.domain.dto.PostInfoDto;
-import com.shotFormLetter.sFL.domain.post.domain.dto.ThumbnailDto;
+import com.shotFormLetter.sFL.domain.post.domain.dto.*;
 
+import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
 import com.shotFormLetter.sFL.domain.post.domain.repository.PostRepository;
 import com.shotFormLetter.sFL.domain.post.domain.service.PostService;
 
@@ -89,16 +88,22 @@ public class PostController {
     }
 
     @GetMapping("/find/{id}")
-    public PostInfoDto getInfo(@RequestHeader("X-AUTH-TOKEN") String token,
+    public ResponseEntity<?> getInfo(@RequestHeader("X-AUTH-TOKEN") String token,
                                @PathVariable("id")Long postId){
-        Member tokenMember=memberService.tokenMember(token);
-        String userId = memberService.getUserIdFromMember(tokenMember);
-        PostInfoDto postInfoDto=postService.getPostInfo(postId);
-        return postInfoDto;
+        try {
+            Member tokenMember=memberService.tokenMember(token);
+            String userId = memberService.getUserIdFromMember(tokenMember);
+            PostInfoDto postInfoDto=postService.getPostInfo(postId);
+            return ResponseEntity.ok(postInfoDto);
+        }catch (DataNotFoundException e) {
+            MessageDto messageDto=new MessageDto();
+            messageDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
+        }
     }
 
-    @GetMapping("/open/{id}")
-    public ResponseEntity<?> openPost(@PathVariable("id") Long postId) {
+    @GetMapping("/open/{uuid}")
+    public ResponseEntity<?> openPost(@PathVariable("uuid") String postId) {
         try {
             PostInfoDto postInfoDto = postService.openPostDto(postId);
             return ResponseEntity.ok(postInfoDto);
@@ -109,24 +114,35 @@ public class PostController {
         }
     }
 
-    @GetMapping("/urls")
-    public MessageDto getUrl(@RequestParam("postId")Long postId, @RequestHeader("X-AUTH-TOKEN")String token){
+    @PostMapping("/urls")
+    public ResponseEntity<?> getUrl(@RequestHeader("X-AUTH-TOKEN")String token,
+                             @RequestBody PostIdDto postId){
         Member tokenMember=memberService.tokenMember(token);
-        String userId = memberService.getUserIdFromMember(tokenMember);
-        MessageDto messageDto=postService.urlMessage(postId,userId);
-        return messageDto;
+        Long getId=postId.getPostId();
+        try{
+            String userId = memberService.getUserIdFromMember(tokenMember);
+            return ResponseEntity.ok(postService.urlMessage(getId,userId));
+        } catch (DataNotFoundException e){
+            MessageDto messageDto=new MessageDto();
+            messageDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
+        }
     }
 
 
     @DeleteMapping("/delete")
-    public MessageDto deletePost(@RequestParam("userId")String userId,
-                           @RequestParam("postId")Long postId,
-                           @RequestHeader("X-AUTH-TOKEN")String token){
+    public ResponseEntity<?>  deletePost(@RequestBody DeletePostDto deletePostDto, @RequestHeader("X-AUTH-TOKEN")String token){
+        Long userId=deletePostDto.getUserSeq();
+        Long postId=deletePostDto.getPostId();
         Member tokenMember=memberService.tokenMember(token);
-        if(tokenMember.getUsername().equals(userId)){
-            return postService.deletePost(postId,userId);
-        } else {
-            return postService.getMessage();
+        MessageDto messageDto=new MessageDto();
+        try{
+            postService.deletePost(postId, userId);
+            messageDto.setMessage("삭제완료");
+            return ResponseEntity.ok(messageDto);
+        } catch (DataNotFoundException e) {
+            messageDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
         }
     }
 }

@@ -43,9 +43,15 @@ public class MemberController {
 
 
     @PostMapping("/login")
-    public TokenUser login(@Valid @RequestBody LoginDto loginDto) {
-        TokenUser tokenUser=memberService.login(loginDto);
-        return tokenUser;
+    public ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto) {
+        MessageDto messageDto=new MessageDto();
+        try {
+            TokenUser tokenUser=memberService.login(loginDto);
+            return ResponseEntity.ok(tokenUser);
+        } catch (DataNotFoundException e){
+            messageDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
+        }
     }
 
     @GetMapping("/profile")
@@ -86,10 +92,30 @@ public class MemberController {
                 messageDto.setMessage(e.getMessage());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
             }
+        } else{
+            try{
+                memberService.changeProfile(userProfileImage,tokenMember,userName);
+                messageDto.setMessage("수정이 완료되었습니다");
+                return ResponseEntity.ok(messageDto);
+            }catch (DataNotFoundException e){
+                messageDto.setMessage(e.getMessage());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
+            }
         }
-        memberService.changeImage(tokenMember,userProfileImage);
-        messageDto.setMessage("수정이 완료되었습니다");
-        return ResponseEntity.ok(messageDto);
+    }
+
+    @DeleteMapping("/userimage")
+    public ResponseEntity<?> profile(@RequestHeader("X-AUTH-TOKEN")String token){
+        Member tokenMember=memberService.tokenMember(token);
+        MessageDto messageDto=new MessageDto();
+        try{
+            memberService.deleteUserImage(tokenMember);
+            messageDto.setMessage("기본이미지로 설정되었습니다.");
+            return ResponseEntity.ok(messageDto);
+        }catch (DataNotFoundException e){
+            messageDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
+        }
     }
 }
 

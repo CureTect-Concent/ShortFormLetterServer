@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()//URL 관리
                 .authorizeRequests()
-                .antMatchers("/join","/public/**","/swagger-ui.html","/login","/h2-console/**","/post/open/{id}","/music/upload","/music/list").permitAll()
+                .antMatchers("/join","/public/**","/swagger-ui.html","/login","/h2-console/**","/post/open/{uuid}","/music/upload","/music/list").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 // JwtAuthenticationFilter를 먼저 적용

@@ -24,10 +24,10 @@ public interface PostService {
     PostInfoDto getPostInfo(Long postId);
 
     String getNewReference(String geturls,String new_meida_reference);
-    PostInfoDto openPostDto(Long postId);
+    PostInfoDto openPostDto(String postId);
     void createLink(List<String> s3Urls,String postId,String userId,String id,List<MultipartFile> newimageList,List<MultipartFile> newthumbnailList);
 //    void createAction(List<String> s3Urls,String postId,String userId,List<MultipartFile> newimageList);
-    MessageDto deletePost(Long getPostId,String userId);
+    void deletePost(Long getPostId,Long userSeq);
 
 //    public List<String> makeMediaInfo(String media, List<String> s3urls);
 

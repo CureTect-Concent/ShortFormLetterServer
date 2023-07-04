@@ -10,7 +10,6 @@ import java.util.List;
 @Getter
 @Setter
 public class PostInfoDto {
-    private Long postId;
     private String username;
     private String title;
     private String content;

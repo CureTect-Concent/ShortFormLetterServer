@@ -60,9 +60,9 @@ public class MemberService {
     @Transactional
     public TokenUser login(LoginDto loginDto){
         Member member = memberRepository.findByUserId(loginDto.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 ID 입니다."));
+                .orElseThrow(() -> new DataNotFoundException("가입되지 않은 ID 입니다."));
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("잘못된 비밀번호입니다.");
+            throw new DataNotFoundException("잘못된 비밀번호입니다.");
         }
         System.out.println(member.getUsername());
         String token = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
@@ -87,8 +87,15 @@ public class MemberService {
 
     public void changeProfile(MultipartFile profileImage,Member member,String userName){
         Member isMember= memberRepository.getByUserName(userName);
-        if(isMember.getUserId().equals(userName) || userName.isEmpty()){
+        if (isMember==null){
+            member.setUserName(userName);
+            memberRepository.save(member);
+        } else{
             throw new DataNotFoundException("중복된 이름입니다.");
+        }
+        String nowlink=member.getProfile();
+        if (nowlink!=null){
+            s3UploadService.deleteUserImage(nowlink);
         }
         String link = s3UploadService.uploadProfile(profileImage, member);
         member.setUserName(userName);
@@ -97,15 +104,19 @@ public class MemberService {
     }
     public void changeName(Member member,String userName){
         Member isMember= memberRepository.getByUserName(userName);
-        if(isMember.getUserId().equals(userName)){
-            throw new DataNotFoundException("중복된 이름입니다.");
-        } else {
+        if (isMember==null){
             member.setUserName(userName);
             memberRepository.save(member);
+        } else{
+            throw new DataNotFoundException("중복된 이름입니다.");
         }
     }
 
     public void changeImage(Member member,MultipartFile userImageFile){
+        String nowlink=member.getProfile();
+        if (nowlink!=null){
+            s3UploadService.deleteUserImage(nowlink);
+        }
         String link = s3UploadService.uploadProfile(userImageFile, member);
         member.setProfile(link);
         memberRepository.save(member);
@@ -113,9 +124,18 @@ public class MemberService {
     public UserInfo getUserInfo(Member tokenMember){
         UserInfo userInfo=new UserInfo();
         userInfo.setUserName(tokenMember.getUserId());
-        userInfo.setId(tokenMember.getId());
+        userInfo.setUserSeq(tokenMember.getId());
         userInfo.setUserProfile(tokenMember.getProfile());
         return userInfo;
+    }
+
+    public void deleteUserImage(Member tokenMember){
+        if (tokenMember.getProfile()==null){
+            throw new DataNotFoundException("사진 정보가 없습니다.");
+        }
+        s3UploadService.deleteUserImage(tokenMember.getProfile());
+        tokenMember.setProfile(null);
+        memberRepository.save(tokenMember);
     }
 }
 

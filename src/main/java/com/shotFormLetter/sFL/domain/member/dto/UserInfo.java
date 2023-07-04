@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class UserInfo {
     private String userName;
-    private Long Id;
+    private Long userSeq;
     private String userProfile;
 }

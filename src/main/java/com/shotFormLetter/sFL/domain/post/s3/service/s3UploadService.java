@@ -151,6 +151,9 @@ public class s3UploadService {
         s3Client.deleteObject(deleteRequest);
     }
 
+    public void deleteUserImage(String porfile){
+        deleteImage(porfile);
+    }
 }
 
 

@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +48,7 @@ public class PostServiceImpl implements PostService{
     @Override
     public String createPost(String title, String content, Member member, String media_reference,Integer musicId,String userId,boolean openstatus){
         Post post= new Post();
+        post.setPostUk(UUID.randomUUID().toString());
         post.setTitle(title);
         post.setContent(content);
         post.setMember(member);
@@ -153,7 +155,6 @@ public class PostServiceImpl implements PostService{
             mediaDtos= make(media,s3urls);
         }
         PostInfoDto postInfoDto =new PostInfoDto();
-        postInfoDto.setPostId(post.getPostId());
         postInfoDto.setUsername(post.getMember().getUserId());
         postInfoDto.setTitle(post.getTitle());
         postInfoDto.setContent(post.getContent());
@@ -192,8 +193,10 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public PostInfoDto openPostDto(Long postId){
-        Post post=postRepository.getPostByPostId(postId);
+    public PostInfoDto openPostDto(String postId){
+        Post post=postRepository.getPostByPostUk(postId);
+        System.out.println("결과");
+        System.out.println(post.getMember().getUserId());
         if(post==null){
             throw new DataNotFoundException("게시글 조회 안됨");
 //            throw new IllegalStateException("게시글 조회 안됨");
@@ -214,7 +217,6 @@ public class PostServiceImpl implements PostService{
             mediaDtos= make(media,s3urls);
         }
         PostInfoDto postInfoDto =new PostInfoDto();
-        postInfoDto.setPostId(post.getPostId());
         postInfoDto.setUsername(post.getMember().getUserId());
         postInfoDto.setTitle(post.getTitle());
         postInfoDto.setContent(post.getContent());
@@ -229,20 +231,33 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public MessageDto deletePost(Long getPostId,String userId){
-        MessageDto messageDto= new MessageDto();
-        Post post= postRepository.getPostByPostId(getPostId);
-        if(post==null){
-            messageDto.setMessage("게시물 조회 안됨");
-        } else {
-            List<String> s3urls=post.getS3Urls();
-            String postId=post.getPostId().toString();
-            s3UploadService.deleteList(s3urls);
-            postRepository.delete(post);
-            messageDto.setMessage("삭제완료");
+    public void deletePost(Long getPostId,Long userSeq) {
+        Post getPost = postRepository.getPostByPostId(getPostId);
+        if (getPost == null) {
+            throw new DataNotFoundException("게시글이 없습니다.");
+        } else if (!getPost.getMember().getId().equals(userSeq)) {
+            throw new DataNotFoundException("삭제할 권한이 없습니다.");
         }
-        return messageDto;
+        if (getPost.getMember().getId().equals(userSeq)) {
+            List<String> s3urls = getPost.getS3Urls();
+            String postId = getPost.getPostId().toString();
+            s3UploadService.deleteList(s3urls);
+            postRepository.delete(getPost);
+        }
     }
+//        MessageDto messageDto= new MessageDto();
+//        Post post= postRepository.getPostByPostId(getPostId);
+//        if(post==null){
+//            throw new DataNotFoundException("게시물 조회 안됨");
+//        } else {
+//            List<String> s3urls=post.getS3Urls();
+//            String postId=post.getPostId().toString();
+//            s3UploadService.deleteList(s3urls);
+//            postRepository.delete(post);
+//            messageDto.setMessage("삭제완료");
+//        }
+//        return messageDto;
+
     @Override
     public MessageDto getMessage(){
         MessageDto messageDto=new MessageDto();
@@ -256,12 +271,12 @@ public class PostServiceImpl implements PostService{
         System.out.println("결과:"+post);
         MessageDto messageDto=new MessageDto();
         if (post == null) {
-            messageDto.setMessage("게시물 조회 없음");
+            throw new DataNotFoundException("게시글이 없습니다.");
         } else if(post.getOpenStatus()==Boolean.FALSE){
-            messageDto.setMessage("공개설정 수정 필요함");
+            throw new DataNotFoundException("공개수정이 필요합니다.");
         } else{
             String urlId = post.getPostId().toString();
-            messageDto.setMessage("https://shared.concents.io/letter/"+urlId);
+            messageDto.setMessage("https://shared.concents.io/letter/"+post.getPostUk());
         }
         return messageDto;
     }
