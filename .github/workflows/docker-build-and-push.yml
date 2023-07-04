@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     env:
       CONCENT_DB_URL: ${{ secrets.CONCENT_DB_URL }}
       DRIVER_CLASS: ${{ secrets.DRIVER_CLASS }}
@@ -20,18 +19,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Generate env Parameter
-        run: |
-          echo "CONCENT_DB_URL=$CONCENT_DB_URL" >> .env.local
-          echo "DRIVER_CLASS=$DRIVER_CLASS" >> .env.local
-          echo "PORT=$PORT" >> .env.local
-          echo "CONCENT_USERNAME=$CONCENT_USERNAME" >> .env.local
-          echo "CONCENT_PASSWORD=$CONCENT_PASSWORD" >> .env.local
+#      - name: Generate env Parameter
+#        run: |
+#          echo "CONCENT_DB_URL=$CONCENT_DB_URL" >> .env.local
+#          echo "DRIVER_CLASS=$DRIVER_CLASS" >> .env.local
+#          echo "PORT=$PORT" >> .env.local
+#          echo "CONCENT_USERNAME=$CONCENT_USERNAME" >> .env.local
+#          echo "CONCENT_PASSWORD=$CONCENT_PASSWORD" >> .env.local
 
-
-      - name: Build and push
-        run:
-          ./gradlew build
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
