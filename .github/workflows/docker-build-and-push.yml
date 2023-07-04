@@ -17,17 +17,21 @@ jobs:
 
 
     steps:
+      - name: Generate env Parameter
+        env:
+          CONCENT_DB_URL: ${{ secrets.CONCENT_DB_URL }}
+          DRIVER_CLASS: ${{ secrets.DRIVER_CLASS }}
+          CONCENT_USERNAME: ${{ secrets.CONCENT_USERNAME }}
+          CONCENT_PASSWORD: ${{ secrets.CONCENT_PASSWORD }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secretsAWS_SECRET_KEY }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+          AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+          PORT: ${{ secrets.PORT }}
+          S3_BASE_URL: ${{ secrets.S3_BASE_URL}}
+
       - name: Checkout code
         uses: actions/checkout@v2
-
-#      - name: Generate env Parameter
-#        run: |
-#          echo "CONCENT_DB_URL=$CONCENT_DB_URL" >> .env.local
-#          echo "DRIVER_CLASS=$DRIVER_CLASS" >> .env.local
-#          echo "PORT=$PORT" >> .env.local
-#          echo "CONCENT_USERNAME=$CONCENT_USERNAME" >> .env.local
-#          echo "CONCENT_PASSWORD=$CONCENT_PASSWORD" >> .env.local
-
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
