@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CONCENT_DB_URL=${{ secrets.CONCENT_DB_URL }}
-      DRIVER_CLASS=${{ secrets.DRIVER_CLASS }}
-      AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
-      AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
-      S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}
-      AWS_S3_REGION=${{ secrets.AWS_S3_REGION }}
-      PORT=${{ secrets.PORT }}
-      S3_BASE_URL=${{ secrets.S3_BASE_URL }}
+      CONCENT_DB_URL: ${{ secrets.CONCENT_DB_URL }}
+      DRIVER_CLASS: ${{ secrets.DRIVER_CLASS }}
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+      PORT: ${{ secrets.PORT }}
+      S3_BASE_URL: ${{ secrets.S3_BASE_URL }}
 
     steps:
       - name: Checkout code
@@ -34,8 +34,6 @@ jobs:
           echo "PORT=$PORT" >> .env.local
           echo "S3_BASE_URL=$S3_BASE_URL" >> .env.local
 
-
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -48,11 +46,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Build and push
-        run:
-          ./gradlew build
-
-      - name: Build and push
+      - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
           context: .
