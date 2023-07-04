@@ -37,6 +37,7 @@ jobs:
           echo "CONCENT_USERNAME=$CONCENT_USERNAME" >> .env.local
           echo "CONCENT_PASSWORD=$CONCENT_PASSWORD" >> .env.local
 
+
       - name: Build and push
         run:
           ./gradlew build
