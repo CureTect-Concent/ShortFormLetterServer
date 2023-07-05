@@ -3,7 +3,7 @@ name: Pull and Run Container
 on:
   push:
     branches:
-      - api
+      - action
 
 jobs:
   build:
@@ -37,5 +37,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: concent/sfl:1.21
+          tags: concent/sfl:1.22
           platforms: linux/amd64,linux/arm64,linux/arm/v7
