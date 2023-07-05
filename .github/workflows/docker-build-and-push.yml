@@ -24,9 +24,9 @@ jobs:
       - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
       - run: cat ./src/main/resources/application.properties
 
-#      - name: Build and push
-#        run:
-#          ./gradlew build
+      - name: Build and push
+        run:
+          ./gradlew build
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
