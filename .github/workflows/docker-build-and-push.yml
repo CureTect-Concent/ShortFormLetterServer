@@ -5,13 +5,9 @@ on:
     branches:
       - action
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
-
-
 
     steps:
       - name: Checkout code
@@ -46,7 +42,6 @@ jobs:
           echo $AWS_S3_REGION
           echo $PORT
           echo $S3_BASE_URL
-
 
       - name: Build and push
         run:
