@@ -13,9 +13,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Copy application.properties to workflow file
+      - name: Set up environment variables
         run: |
-            echo "$(cat src/main/resources/application-private.properties)" >> .github/workflows/docker-build-and-push.yml
+          echo "DATABASE_URL=${{ secrets.CONCENT_DB_URL }}" >> $GITHUB_ENV
+          echo "DRIVER_CLASS=${{ secrets.DRIVER_CLASS }}" >> $GITHUB_ENV
+          echo "CONCENT_USERNAME=${{ secrets.CONCENT_USERNAME }}" >> $GITHUB_ENV
+          echo "CONCENT_PASSWORD=${{ secrets.CONCENT_PASSWORD }}" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_SECRETS_KEY=${{ secrets.AWS_SECRETS_KEY }}" >> $GITHUB_ENV
+          echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> $GITHUB_ENV
+          echo "AWS_S3_REGION=${{ secrets.AWS_S3_REGION }}" >> $GITHUB_ENV
+          echo "PORT=${{ secrets.PORT }}" >> $GITHUB_ENV
+          echo "S3_BASE_URL=${{ secrets.S3_BASE_URL }}" >> $GITHUB_ENV
+          echo "SPRING_JPA_HIBERNATE_DIALECT=org.hibernate.dialect.MySQL8Dialect" >> $GITHUB_ENV
+          echo "SPRING_JPA_HIBERNATE_DDL_AUTO=update" >> $GITHUB_ENV
+          echo "SPRING_JPA_HIBERNATE_FORMAT_SQL=true" >> $GITHUB_ENV
+          echo "SPRING_JPA_HIBERNATE_SHOW_SQL=true" >> $GITHUB_ENV
+          echo "CLOUD.AWS.STACK.AUTO=false" >> $GITHUB_ENV
+          echo "SPRING.SERVLET.MULTIPART.MAX-FILE-SIZE=100MB" >> $GITHUB_ENV
+          echo "SPRING.SERVLET.MULTIPART.MAX-REQUEST-SIZE=100MB" >> $GITHUB_ENV
+          echo "LOGGING.LEVEL.COM.AMAZONAWS.UTIL.EC2METADATAUTILS=error" >> $GITHUB_ENV
 
       - name: Build and push
         run:

@@ -64,43 +64,28 @@ public class MemberController {
         }
         return ResponseEntity.ok(memberService.getUserInfo(tokenMember));
     }
-    @PutMapping("/change")
+    @PutMapping("/changeProfile")
     public ResponseEntity<?> profile(@RequestParam(value = "userProfileImage",required = false)MultipartFile userProfileImage,
-                                     @RequestParam(value ="userName",required = false)String userName,
+                                     @RequestParam(value ="userName",required = false, defaultValue = "null")String userName,
+                                     @RequestParam(value = "isDelete") Boolean isDelete,
                                      @RequestHeader("X-AUTH-TOKEN")String token) {
+
         Member tokenMember=memberService.tokenMember(token);
         MessageDto messageDto=new MessageDto();
 
-        if (userName==null && userProfileImage==null){
-            messageDto.setMessage("사진을 넣거나 이름을 수정해주세요");
+
+        if(userProfileImage==null && userName.equals("null")){
+            messageDto.setMessage("변경 사항 없음");
+            return ResponseEntity.ok(messageDto);
+        }
+
+        try{
+            memberService.change(tokenMember,userProfileImage,userName,isDelete);
+            messageDto.setMessage("수정이 완료되었습니다");
+            return ResponseEntity.ok(messageDto);
+        } catch (DataNotFoundException e){
+            messageDto.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-        } else if(userProfileImage==null && userName != null){
-            try{
-                memberService.changeName(tokenMember,userName);
-                messageDto.setMessage("수정이 완료되었습니다");
-                return ResponseEntity.ok(messageDto);
-            } catch (DataNotFoundException e) {
-                messageDto.setMessage(e.getMessage());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-            }
-        } else if (userProfileImage!=null && userName == null) {
-            try{
-                memberService.changeImage(tokenMember,userProfileImage);
-                messageDto.setMessage("수정이 완료되었습니다");
-                return ResponseEntity.ok(messageDto);
-            }catch (DataNotFoundException e){
-                messageDto.setMessage(e.getMessage());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-            }
-        } else{
-            try{
-                memberService.changeProfile(userProfileImage,tokenMember,userName);
-                messageDto.setMessage("수정이 완료되었습니다");
-                return ResponseEntity.ok(messageDto);
-            }catch (DataNotFoundException e){
-                messageDto.setMessage(e.getMessage());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-            }
         }
     }
 

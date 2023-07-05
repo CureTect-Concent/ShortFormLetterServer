@@ -115,7 +115,7 @@ public class s3UploadService {
         if (musicFile==null){
             return null;
         }
-        String key=member.getId()+"/profile/"+ musicFile.getOriginalFilename();
+        String key=member.getId().toString()+"/profile/"+ musicFile.getOriginalFilename();
         String userProfile = uploadImage(musicFile,key);
 //        try {
 //            userProfile = uploadImage(musicFile,key);
@@ -151,8 +151,8 @@ public class s3UploadService {
         s3Client.deleteObject(deleteRequest);
     }
 
-    public void deleteUserImage(String porfile){
-        deleteImage(porfile);
+    public void deleteUserImage(String profile){
+        deleteImage(profile);
     }
 }
 

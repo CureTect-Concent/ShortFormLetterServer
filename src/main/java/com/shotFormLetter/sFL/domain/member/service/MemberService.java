@@ -30,8 +30,8 @@ public class MemberService {
 
     @Transactional
     public Long join(MemberDto memberDto){
-        if (memberDto.getUserName().length()<=3){
-            throw new DataNotFoundException("이름은 4자부터 가능합니다.");
+        if (memberDto.getUserName().length()<=2){
+            throw new DataNotFoundException("이름은 3글자부터 가능합니다.");
         }
         if (memberDto.getUserId().length()<5){
             throw new DataNotFoundException("Id는 5자부터 가능합니다.");
@@ -85,48 +85,50 @@ public class MemberService {
         return member.getUsername();
     }
 
-    public void changeProfile(MultipartFile profileImage,Member member,String userName){
-        Member isMember= memberRepository.getByUserName(userName);
-        if (isMember==null){
-            member.setUserName(userName);
-            memberRepository.save(member);
-        } else{
-            throw new DataNotFoundException("중복된 이름입니다.");
-        }
-        String nowlink=member.getProfile();
-        if (nowlink!=null){
-            s3UploadService.deleteUserImage(nowlink);
-        }
-        String link = s3UploadService.uploadProfile(profileImage, member);
-        member.setUserName(userName);
-        member.setProfile(link);
-        memberRepository.save(member);
-    }
-    public void changeName(Member member,String userName){
-        Member isMember= memberRepository.getByUserName(userName);
-        if (isMember==null){
-            member.setUserName(userName);
-            memberRepository.save(member);
-        } else{
-            throw new DataNotFoundException("중복된 이름입니다.");
-        }
-    }
-
-    public void changeImage(Member member,MultipartFile userImageFile){
-        String nowlink=member.getProfile();
-        if (nowlink!=null){
-            s3UploadService.deleteUserImage(nowlink);
-        }
-        String link = s3UploadService.uploadProfile(userImageFile, member);
-        member.setProfile(link);
-        memberRepository.save(member);
-    }
     public UserInfo getUserInfo(Member tokenMember){
         UserInfo userInfo=new UserInfo();
         userInfo.setUserName(tokenMember.getUserId());
         userInfo.setUserSeq(tokenMember.getId());
         userInfo.setUserProfile(tokenMember.getProfile());
         return userInfo;
+    }
+
+    public void change(Member member,MultipartFile userImageFile, String userName,Boolean isDelete){
+        String link=member.getProfile();
+
+        //기본이미지 보낸경우
+        if(userImageFile==null) {
+            // 기존 이미지가 있는 상태에서 깡통으로 바꾸고싶다면?
+            if(link!=null && isDelete==Boolean.TRUE){
+                s3UploadService.deleteUserImage(link);
+                link=null;
+            }
+        } else{
+            // 기존 이미지가 있는 상태에서 새로운 이미지를 바꾸고샆다면?
+            if(link!=null && isDelete==Boolean.FALSE){
+                s3UploadService.deleteUserImage(link);
+                link=s3UploadService.uploadProfile(userImageFile,member);
+            } else{
+                link=s3UploadService.uploadProfile(userImageFile,member);
+            }
+        }
+
+        if(userName.equals("null")){
+            throw new DataNotFoundException("이름이 없거나 null 이란 이름은 사용할 수 없습니다");
+        } else {
+            Member isMember= memberRepository.getByUserName(userName);
+            if(isMember==null && userName.length()<2){
+                throw new DataNotFoundException("이름은 2글자부터 사용가능합니다");
+            } else if(isMember!=null && isMember.getId()!=member.getId()){
+                throw new DataNotFoundException("중복된 이름입니다");
+            }
+        }
+        System.out.println("이름: "+userName);
+        System.out.println("사진 링크값: "+link);
+
+        member.setProfile(link);
+        member.setUserName(userName);
+        memberRepository.save(member);
     }
 
     public void deleteUserImage(Member tokenMember){
