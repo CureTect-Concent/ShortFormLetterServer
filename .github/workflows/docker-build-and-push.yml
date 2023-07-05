@@ -45,7 +45,7 @@ jobs:
           echo $S3_BUCKET_NAME
           echo $AWS_S3_REGION
           echo $PORT
-          echo $3_BASE_URL
+          echo $S3_BASE_URL
 
       - name: Build and push
         run:
