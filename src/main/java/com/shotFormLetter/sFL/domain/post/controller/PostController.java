@@ -60,14 +60,15 @@ public class PostController {
                                         @RequestParam(value = "title") String title,
                                         @RequestParam(value = "imageList",required = false) List <MultipartFile> newImageList,
                                         @RequestParam(value = "thumbnailList",required = false) List <MultipartFile> newthumbnailList,
-                                        @RequestParam(value="new_media_reference",required = false) String new_media_reference,
+                                        @RequestParam(value="media_reference",required = false) String new_media_reference,
                                         @RequestParam(value = "openStatus") boolean openstatus,
                                         @RequestParam(value = "musicId",required = false)Integer musicId,
                                         @RequestHeader("X-AUTH-TOKEN")String token){
 
+
         Member tokenMember=memberService.tokenMember(token);
         String userId = memberService.getUserIdFromMember(tokenMember);
-            try {
+        try {
                 postService.updatePost(postId,content,title, new_media_reference,musicId, userId,openstatus, newImageList,newthumbnailList);
                 MessageDto messageDto=new MessageDto();
                 messageDto.setMessage("수정완료");

@@ -76,18 +76,30 @@ public class PostServiceImpl implements PostService{
     public Post updatePost(Long postId,String content,String title, String new_media_reference,Integer musicId,
                            String userId,boolean openstauts, List <MultipartFile> newImageList, List <MultipartFile> newthumbnailList){
         Post post =postRepository.getPostByPostId(postId);
-        String post_id=post.getPostUk().toString();
         if(post==null){
             throw new IllegalStateException("게시글 조회 안됨");
         }
+        String post_id=postId.toString();
+        String user_pk=post.getMember().getId().toString();
+        String now_reference=post.getMedia_reference();
+        if (now_reference.equals("null") && new_media_reference.equals("null")) {
+            now_reference="null";
+        } else if(!now_reference.equals("null") && !new_media_reference.equals("null")){
+            now_reference=getNewReference(now_reference,new_media_reference);
+        } else if(!now_reference.equals("null")&& new_media_reference.equals("null") ){
+            now_reference=now_reference;
+        } else {
+            now_reference=new_media_reference;
+        }
+        System.out.println("결과: "+now_reference);
+
         String id=post.getMember().getId().toString();
         List<String> geturls=post.getS3Urls();
-        if(newImageList!=null && newthumbnailList!=null && new_media_reference!=null){
+        if(newImageList!=null && newthumbnailList!=null){
             geturls=s3UploadService.updategetUrls(newImageList,userId,geturls,postId.toString(),id);
-            s3UploadService.updateThumbnail(newthumbnailList,post_id,id);
+            s3UploadService.updateThumbnail(newthumbnailList,post_id,user_pk);
         }
-        String now_reference=post.getMedia_reference();
-        now_reference=getNewReference(now_reference,new_media_reference);
+
         post.setContent(content);
         post.setTitle(title);
         post.setOpenStatus(openstauts);
@@ -99,24 +111,20 @@ public class PostServiceImpl implements PostService{
         return post;
     }
     @Override
-    public String getNewReference(String new_reference,String new_meida_reference){
-        if (new_meida_reference==null){
-            return new_reference;
-        } else if (new_reference==null){
-            return new_meida_reference;
-        }
+    public String getNewReference(String now_reference,String new_meida_reference){
         try {
             // geturls를 JSONArray로 변환
-            JSONArray urls = new JSONArray(new_reference);
+            JSONArray urls = new JSONArray(now_reference);
             JSONArray new_urls = new JSONArray(new_meida_reference);
             for (int i = 0; i < new_urls.length(); i++) {
                 urls.put(new_urls.getJSONObject(i));
             }
-            return urls.toString();
+                return urls.toString();
         } catch (JSONException e) {
             e.printStackTrace();
-            return new_reference;
+            return now_reference;
         }
+
     }
 
     @Override
