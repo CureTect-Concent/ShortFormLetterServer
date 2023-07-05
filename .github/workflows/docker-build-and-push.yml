@@ -19,14 +19,21 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
 
-      - uses: actions/checkout@v3
-      - run: touch ./src/main/resources/application.properties
-      - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
-      - run: cat ./src/main/resources/application.properties
+      - name: Checkout
+        uses: actions/checkout@v3
+      ## 1) git ignore에 등록된 application.properties 파일 생성해주기
+      - name: make application.properties
+        run: |
+          cd ./src/main/resources
+          touch ./application.yml
+          echo "${{ secrets.PROPERTIES }}" > ./application.properties
+        shell: bash
 
-      - name: Build and push
-        run:
-          ./gradlew build
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Build with Gradle
+        run: ./gradlew clean build
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
