@@ -22,17 +22,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: make application.properties
+      - name: Set up environment variables
+        env:
+          APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
         run: |
-          cd ./src/main/resources
-          touch ./application.properties
-          echo "${{ secrets.PROPERTIES }}" > ./application.properties
-        shell: bash
+            echo "${{ secrets.APPLICATION_PROPERTIES }}" > application.properties
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-      - name: Build with Gradle
-        run: ./gradlew clean build
+      - name: Build application
+        run: |
+            ./gradlew build --spring.config.location=application.properties
+
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
