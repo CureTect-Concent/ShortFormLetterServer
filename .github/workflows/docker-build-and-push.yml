@@ -15,7 +15,7 @@ jobs:
 
       - name: Copy application.properties to workflow file
         run: |
-            echo "$(cat src/main/resources/application.properties)" >> .github/workflows/docker-build-and-push.yml
+            echo "$(cat src/main/resources/application-private.properties)" >> .github/workflows/docker-build-and-push.yml
 
       - name: Build and push
         run:
