@@ -17,10 +17,6 @@ jobs:
         run: |
             echo "$(cat src/main/resources/application.properties)" >> .github/workflows/docker-build-and-push.yml
 
-      - name: Build and push
-        run:
-          ./gradlew build
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
