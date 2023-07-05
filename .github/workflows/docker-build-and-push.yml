@@ -13,11 +13,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Copy application.properties to workflow file
+        run: |
+            echo "$(cat src/main/resources/application.properties)" >> .github/workflows/docker-build-and-push.yml
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
-
+      - name
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
