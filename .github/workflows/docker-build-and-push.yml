@@ -21,16 +21,9 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
-
-      - name: Set up environment variables
-        env:
-          APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES }}
-        run: |
-            echo "${{ secrets.APPLICATION_PROPERTIES }}" > application.properties
-
-      - name: Build application
-        run: |
-            ./gradlew build --spring.config.location=application.properties
+      - run: touch ./src/main/resources/application.properties
+      - run: echo "${{ secrets.PROPERTIES }}" > ./src/main/resources/application.properties
+      - run: cat ./src/main/resources/application.properties
 
 
       - name: Set up Docker Buildx
