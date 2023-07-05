@@ -66,5 +66,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: concent/sfl:1.22
+          tags: concent/sfl:1.23
           platforms: linux/amd64,linux/arm64,linux/arm/v7
