@@ -9,17 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      CONCENT_DB_URL: ${{ secrets.CONCENT_DB_URL }}
-      DRIVER_CLASS: ${{ secrets.DRIVER_CLASS }}
-      CONCENT_USERNAME: ${{ secrets.CONCENT_USERNAME }}
-      CONCENT_PASSWORD: ${{ secrets.CONCENT_PASSWORD }}
-      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-      S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
-      PORT: ${{ secrets.PORT }}
-      S3_BASE_URL: ${{ secrets.S3_BASE_URL }}
+
 
 
 
@@ -34,17 +24,28 @@ jobs:
           java-version: '11'
 
       - name: Set up environment variables
+        env:
+          CONCENT_DB_URL: ${{ secrets.CONCENT_DB_URL }}
+          DRIVER_CLASS: ${{ secrets.DRIVER_CLASS }}
+          CONCENT_USERNAME: ${{ secrets.CONCENT_USERNAME }}
+          CONCENT_PASSWORD: ${{ secrets.CONCENT_PASSWORD }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+          AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+          PORT: ${{ secrets.PORT }}
+          S3_BASE_URL: ${{ secrets.S3_BASE_URL }}
         run: |
-            echo "CONCENT_DB_URL=${{ env.CONCENT_DB_URL }}" >> $GITHUB_ENV
-            echo "DRIVER_CLASS=${{ env.DRIVER_CLASS }}" >> $GITHUB_ENV
-            echo "CONCENT_USERNAME=${{ env.CONCENT_USERNAME }}" >> $GITHUB_ENV
-            echo "CONCENT_PASSWORD=${{ env.CONCENT_PASSWORD }}" >> $GITHUB_ENV
-            echo "AWS_ACCESS_KEY=${{ env.AWS_ACCESS_KEY }}" >> $GITHUB_ENV
-            echo "AWS_SECRET_KEY=${{ env.AWS_SECRET_KEY }}" >> $GITHUB_ENV
-            echo "S3_BUCKET_NAME=${{ env.S3_BUCKET_NAME }}" >> $GITHUB_ENV
-            echo "AWS_S3_REGION=${{ env.AWS_S3_REGION }}" >> $GITHUB_ENV
-            echo "PORT=${{ env.PORT }}" >> $GITHUB_ENV
-            echo "S3_BASE_URL=${{ env.S3_BASE_URL }}" >> $GITHUB_ENV
+          echo $CONCENT_DB_URL
+          echo $DRIVER_CLASS
+          echo $CONCENT_USERNAME
+          echo $CONCENT_PASSWORD
+          echo $AWS_ACCESS_KEY
+          echo $AWS_SECRET_KEY
+          echo $S3_BUCKET_NAME
+          echo $AWS_S3_REGION
+          echo $PORT
+          echo $3_BASE_URL
 
       - name: Build and push
         run:
