@@ -106,6 +106,7 @@ public class MemberService {
         } else{
             // 기존 이미지가 있는 상태에서 새로운 이미지를 바꾸고샆다면?
             if(link!=null && isDelete==Boolean.FALSE){
+
                 s3UploadService.deleteUserImage(link);
                 link=s3UploadService.uploadProfile(userImageFile,member);
             } else{

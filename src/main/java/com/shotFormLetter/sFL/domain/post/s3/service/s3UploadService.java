@@ -142,6 +142,8 @@ public class s3UploadService {
         }
     }
 
+
+
     public void deleteImage(String urls){
         String objectKey = urls;
         DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
@@ -152,7 +154,9 @@ public class s3UploadService {
     }
 
     public void deleteUserImage(String profile){
-        deleteImage(profile);
+        String getLink=profile.substring(s3baseUrl.length());
+        String deleteKey=getLink.substring(getLink.lastIndexOf('.'));
+        deleteImage(deleteKey);
     }
 }
 
