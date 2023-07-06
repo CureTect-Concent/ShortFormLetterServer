@@ -21,6 +21,7 @@ import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.Optional;
 
+
 @RequiredArgsConstructor
 @Service
 public class MemberService {
@@ -31,15 +32,7 @@ public class MemberService {
 
     @Transactional
     public Long join(MemberDto memberDto){
-        if (memberDto.getUserName().length()<2){
-            throw new DataNotFoundException("이름은 2글자 이상이어야 합니다");
-        }
-        if (memberDto.getUserId().length()<5){
-            throw new DataNotFoundException("Id는 5글자 이상이어야 합니다");
-        }
-        if (memberDto.getPassword().length()<6){
-            throw new DataNotFoundException("비밀번호는 6글자 이상이어야 합니다");
-        }
+        memberDto.validate();
         Optional<Member> existingMember = memberRepository.findByUserId(memberDto.getUserId());
         if (existingMember.isPresent()) {
             throw new DataNotFoundException("이미 사용 중인 아이디입니다");
@@ -60,11 +53,7 @@ public class MemberService {
 
     @Transactional
     public TokenUser login(LoginDto loginDto){
-        if(loginDto.getUserId().equals("null") || loginDto.getUserId()==null){
-            throw new DataNotFoundException("회원 ID를 입력해주세요");
-        } else if(loginDto.getPassword().equals("null") || loginDto.getPassword()==null){
-            throw new DataNotFoundException("회원 ID를 입력해주세요");
-        }
+        loginDto.validate();
         Member member = memberRepository.findByUserId(loginDto.getUserId())
                 .orElseThrow(() -> new DataNotFoundException("가입되지 않은 ID 입니다"));
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
