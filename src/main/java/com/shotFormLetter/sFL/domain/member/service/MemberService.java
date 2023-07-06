@@ -31,21 +31,21 @@ public class MemberService {
     @Transactional
     public Long join(MemberDto memberDto){
         if (memberDto.getUserName().length()<2){
-            throw new DataNotFoundException("이름은 2글자부터 가능합니다.");
+            throw new DataNotFoundException("이름은 2글자 이상이어야 합니다");
         }
         if (memberDto.getUserId().length()<5){
-            throw new DataNotFoundException("Id는 5자부터 가능합니다.");
+            throw new DataNotFoundException("Id는 5자 이상이어야 합니다");
         }
         if (memberDto.getPassword().length()<6){
-            throw new DataNotFoundException("비밀번호는 6자부터 가능합니다.");
+            throw new DataNotFoundException("비밀번호는 6자 이상이어야 합니다");
         }
         Optional<Member> existingMember = memberRepository.findByUserId(memberDto.getUserId());
         if (existingMember.isPresent()) {
-            throw new DataNotFoundException("이미 사용 중인 아이디입니다.");
+            throw new DataNotFoundException("이미 사용 중인 아이디입니다");
         }
         Optional<Member> existingNickname = memberRepository.findByUserName(memberDto.getUserName());
         if (existingNickname.isPresent()) {
-            throw new DataNotFoundException("이미 사용 중인 닉네임입니다.");
+            throw new DataNotFoundException("이미 사용 중인 닉네임입니다");
         }
         Member member = Member.builder()
                 .userId(memberDto.getUserId())
