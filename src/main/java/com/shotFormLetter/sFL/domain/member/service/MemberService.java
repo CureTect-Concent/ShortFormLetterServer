@@ -34,10 +34,10 @@ public class MemberService {
             throw new DataNotFoundException("이름은 2글자 이상이어야 합니다");
         }
         if (memberDto.getUserId().length()<5){
-            throw new DataNotFoundException("Id는 5자 이상이어야 합니다");
+            throw new DataNotFoundException("Id는 5글자 이상이어야 합니다");
         }
         if (memberDto.getPassword().length()<6){
-            throw new DataNotFoundException("비밀번호는 6자 이상이어야 합니다");
+            throw new DataNotFoundException("비밀번호는 6글자 이상이어야 합니다");
         }
         Optional<Member> existingMember = memberRepository.findByUserId(memberDto.getUserId());
         if (existingMember.isPresent()) {
@@ -59,10 +59,15 @@ public class MemberService {
 
     @Transactional
     public TokenUser login(LoginDto loginDto){
+        if(loginDto.getUserId().equals("null") || loginDto.getUserId()==null){
+            throw new DataNotFoundException("회원 ID를 입력해주세요");
+        } else if(loginDto.getPassword().equals("null") || loginDto.getPassword()==null){
+            throw new DataNotFoundException("회원 ID를 입력해주세요");
+        }
         Member member = memberRepository.findByUserId(loginDto.getUserId())
-                .orElseThrow(() -> new DataNotFoundException("가입되지 않은 ID 입니다."));
+                .orElseThrow(() -> new DataNotFoundException("가입되지 않은 ID 입니다"));
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
-            throw new DataNotFoundException("잘못된 비밀번호입니다.");
+            throw new DataNotFoundException("잘못된 비밀번호입니다");
         }
         System.out.println(member.getUsername());
         String token = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
@@ -114,7 +119,7 @@ public class MemberService {
         }
 
         if(userName.equals("null")){
-            throw new DataNotFoundException("이름이 없거나 null 이란 이름은 사용할 수 없습니다");
+            userName=member.getUserId();
         } else {
             Member isMember= memberRepository.getByUserName(userName);
             if(isMember==null && userName.length()<2){
