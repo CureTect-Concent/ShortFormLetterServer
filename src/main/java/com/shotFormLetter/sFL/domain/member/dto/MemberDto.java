@@ -31,7 +31,7 @@ public class MemberDto {
             if(password.matches(".*[\\p{So}].*")==Boolean.TRUE){
                 throw new DataNotFoundException("비밀번호에 이모티콘은 불가능합니다");
             } else if(password.matches("^(?=.*[a-zA-Z])(?=.*\\d).{6,}$")==Boolean.FALSE) {
-                throw new DataNotFoundException("비밀번호는 6글자 이상의 조합이어야합니다");
+                throw new DataNotFoundException("비밀번호는 영어와 숫자를 포함한 6글자 이상이어야합니다.");
             }
         }else if(password==null || password.equals("null")){
             throw new DataNotFoundException("비밀번호는 필수입니다");
