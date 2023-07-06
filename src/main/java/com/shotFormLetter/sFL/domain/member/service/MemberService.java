@@ -13,6 +13,7 @@ import com.shotFormLetter.sFL.domain.post.s3.service.s3UploadService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -109,6 +110,10 @@ public class MemberService {
                 link=null;
             }
         } else{
+            String checkfile=StringUtils.getFilenameExtension(userImageFile.getOriginalFilename());
+            if(!checkfile.matches("jpg") ||!checkfile.matches("png") ||!checkfile.matches("jpeg") || !checkfile.matches("gif")){
+                throw new DataNotFoundException("음악 또는 동영상은 프로필 사진에 올릴수 없습니다.");
+            }
             // 기존 이미지가 있는 상태에서 새로운 이미지를 바꾸고샆다면?
             if(link!=null && isDelete==Boolean.FALSE){
                 s3UploadService.deleteUserImage(link);
