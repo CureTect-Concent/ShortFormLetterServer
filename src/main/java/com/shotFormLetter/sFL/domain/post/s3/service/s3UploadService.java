@@ -154,9 +154,8 @@ public class s3UploadService {
     }
 
     public void deleteUserImage(String profile){
-        String getLink=profile.substring(s3baseUrl.length());
-        String deleteKey=getLink.substring(getLink.lastIndexOf('.'));
-        deleteImage(deleteKey);
+        String getDeleteKey=profile.substring(s3baseUrl.length());
+        deleteImage(getDeleteKey);
     }
 }
 

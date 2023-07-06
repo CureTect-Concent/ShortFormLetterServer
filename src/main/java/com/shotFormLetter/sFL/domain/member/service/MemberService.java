@@ -106,7 +106,6 @@ public class MemberService {
         } else{
             // 기존 이미지가 있는 상태에서 새로운 이미지를 바꾸고샆다면?
             if(link!=null && isDelete==Boolean.FALSE){
-
                 s3UploadService.deleteUserImage(link);
                 link=s3UploadService.uploadProfile(userImageFile,member);
             } else{
@@ -130,15 +129,6 @@ public class MemberService {
         member.setProfile(link);
         member.setUserName(userName);
         memberRepository.save(member);
-    }
-
-    public void deleteUserImage(Member tokenMember){
-        if (tokenMember.getProfile()==null){
-            throw new DataNotFoundException("사진 정보가 없습니다.");
-        }
-        s3UploadService.deleteUserImage(tokenMember.getProfile());
-        tokenMember.setProfile(null);
-        memberRepository.save(tokenMember);
     }
 }
 

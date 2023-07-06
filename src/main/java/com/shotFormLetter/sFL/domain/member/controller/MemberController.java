@@ -88,20 +88,6 @@ public class MemberController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
         }
     }
-
-    @DeleteMapping("/userimage")
-    public ResponseEntity<?> profile(@RequestHeader("X-AUTH-TOKEN")String token){
-        Member tokenMember=memberService.tokenMember(token);
-        MessageDto messageDto=new MessageDto();
-        try{
-            memberService.deleteUserImage(tokenMember);
-            messageDto.setMessage("기본이미지로 설정되었습니다.");
-            return ResponseEntity.ok(messageDto);
-        }catch (DataNotFoundException e){
-            messageDto.setMessage(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-        }
-    }
 }
 
 
