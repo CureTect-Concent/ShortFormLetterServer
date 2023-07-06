@@ -30,8 +30,8 @@ public class MemberService {
 
     @Transactional
     public Long join(MemberDto memberDto){
-        if (memberDto.getUserName().length()<=2){
-            throw new DataNotFoundException("이름은 3글자부터 가능합니다.");
+        if (memberDto.getUserName().length()<2){
+            throw new DataNotFoundException("이름은 2글자부터 가능합니다.");
         }
         if (memberDto.getUserId().length()<5){
             throw new DataNotFoundException("Id는 5자부터 가능합니다.");
