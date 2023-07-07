@@ -120,6 +120,8 @@ public class MemberService {
                 throw new DataNotFoundException("이름은 2글자부터 사용가능합니다");
             } else if(isMember!=null && isMember.getId()!=member.getId()){
                 throw new DataNotFoundException("중복된 이름입니다");
+            } else if(userName.matches(".*[\\p{So}].*")==Boolean.TRUE){
+                throw new DataNotFoundException("회원 이름에 이모티콘은 사용할 수 없습니다");
             }
         }
         System.out.println("이름: "+userName);
