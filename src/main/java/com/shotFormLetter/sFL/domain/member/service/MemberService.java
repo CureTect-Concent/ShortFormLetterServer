@@ -100,7 +100,7 @@ public class MemberService {
             }
         } else{
             String checkfile=StringUtils.getFilenameExtension(userImageFile.getOriginalFilename());
-            if(!checkfile.matches("jpg") ||!checkfile.matches("png") ||!checkfile.matches("jpeg") || !checkfile.matches("gif")){
+            if(!(checkfile.matches("jpg") || checkfile.matches("png") ||checkfile.matches("jpeg") || checkfile.matches("gif"))){
                 throw new DataNotFoundException("음악 또는 동영상은 프로필 사진에 올릴수 없습니다.");
             }
             // 기존 이미지가 있는 상태에서 새로운 이미지를 바꾸고샆다면?
