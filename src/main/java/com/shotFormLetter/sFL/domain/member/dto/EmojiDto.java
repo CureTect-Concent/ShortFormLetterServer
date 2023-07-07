@@ -2,6 +2,9 @@ package com.shotFormLetter.sFL.domain.member.dto;
 
 import lombok.Getter;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Getter
 public class EmojiDto {
     private String emoji="(?:[\\u2700-\\u27bf]|" +
@@ -14,5 +17,11 @@ public class EmojiDto {
 
     public String getrex(){
         return emoji;
+    }
+
+    public Boolean findEmoji(String userName){
+        Pattern pattern=Pattern.compile(emoji);
+        Matcher matcher=pattern.matcher(emoji);
+        return matcher.find();
     }
 }
