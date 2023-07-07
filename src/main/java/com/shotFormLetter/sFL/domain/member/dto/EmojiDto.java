@@ -21,7 +21,7 @@ public class EmojiDto {
 
     public Boolean findEmoji(String userName){
         Pattern pattern=Pattern.compile(emoji);
-        Matcher matcher=pattern.matcher(emoji);
+        Matcher matcher=pattern.matcher(userName);
         return matcher.find();
     }
 }
