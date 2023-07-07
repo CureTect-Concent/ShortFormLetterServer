@@ -11,8 +11,10 @@ public class MemberDto {
     private String password;
 
     public void validate() {
+        EmojiDto emojidto=new EmojiDto();
+        String emoji=emojidto.getrex();
         if (userId != null) {
-            if(userId.matches(".*[\\p{So}].*")==Boolean.TRUE){
+            if(userId.matches(emoji)==Boolean.TRUE){
                 throw new DataNotFoundException("회원 ID에 이모티콘은 불가능합니다.");
             } else if(userId.length()<5) {
             throw new DataNotFoundException("회원 ID는 5자 이상이어야 합니다");
@@ -22,7 +24,7 @@ public class MemberDto {
         }
 
         if(userName !=null){
-            if(userName.matches(".*[\\p{So}].*")==Boolean.TRUE){
+            if(userName.matches(emoji)==Boolean.TRUE){
                 throw new DataNotFoundException("회원 이름에 이모티콘은 불가능합니다");
             } else if(userName.length()<2){
                 throw new DataNotFoundException("회원이름은 2자 이상이어야 합니다");
@@ -31,14 +33,8 @@ public class MemberDto {
             throw new DataNotFoundException("회원이름은 2자 이상이어야 합니다");
         }
 
-//        if (userName == null || userName.equals("null")) {
-//            throw new DataNotFoundException("회원 이름은 필수입니다");
-//        } else if(userName.length()<2){
-//            throw new DataNotFoundException("회원 이름은 2자 이상이어야 합니다");
-//        }
-
         if (password != null) {
-            if(password.matches(".*[\\p{So}].*")==Boolean.TRUE){
+            if(password.matches(emoji)==Boolean.TRUE){
                 throw new DataNotFoundException("비밀번호에 이모티콘은 불가능합니다");
             } else if(password.matches("^(?=.*[a-zA-Z])(?=.*\\d).{6,}$")==Boolean.FALSE) {
                 throw new DataNotFoundException("비밀번호는 영어와 숫자를 포함한 6글자 이상이어야합니다.");

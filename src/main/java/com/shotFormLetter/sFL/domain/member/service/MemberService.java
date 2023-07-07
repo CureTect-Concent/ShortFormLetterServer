@@ -2,10 +2,7 @@ package com.shotFormLetter.sFL.domain.member.service;
 
 
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
-import com.shotFormLetter.sFL.domain.member.dto.LoginDto;
-import com.shotFormLetter.sFL.domain.member.dto.MemberDto;
-import com.shotFormLetter.sFL.domain.member.dto.TokenUser;
-import com.shotFormLetter.sFL.domain.member.dto.UserInfo;
+import com.shotFormLetter.sFL.domain.member.dto.*;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.repository.MemberRepository;
 import com.shotFormLetter.sFL.domain.member.token.JwtTokenProvider;
@@ -90,6 +87,8 @@ public class MemberService {
 
     public void change(Member member,MultipartFile userImageFile, String userName,Boolean isDelete){
         String link=member.getProfile();
+        EmojiDto emojidto=new EmojiDto();
+        String emoji=emojidto.getrex();
 
         //기본이미지 보낸경우
         if(userImageFile==null) {
@@ -120,7 +119,7 @@ public class MemberService {
                 throw new DataNotFoundException("이름은 2글자부터 사용가능합니다");
             } else if(isMember!=null && isMember.getId()!=member.getId()){
                 throw new DataNotFoundException("중복된 이름입니다");
-            } else if(userName.matches(".*[\\p{So}].*")==Boolean.TRUE){
+            } else if(userName.matches(emoji)==Boolean.TRUE){
                 throw new DataNotFoundException("회원 이름에 이모티콘은 사용할 수 없습니다");
             }
         }
