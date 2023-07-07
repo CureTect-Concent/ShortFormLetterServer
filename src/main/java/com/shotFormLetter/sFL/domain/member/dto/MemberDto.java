@@ -21,11 +21,21 @@ public class MemberDto {
             throw new DataNotFoundException("회원 ID는 필수입니다");
         }
 
-        if (userName == null || userName.equals("null")) {
-            throw new DataNotFoundException("회원 이름을 입력해주세요");
-        } else if(userName.length()<2){
-            throw new DataNotFoundException("회원 이름은 2자 이상이어야 합니다");
+        if(userName !=null){
+            if(userName.matches(".*[\\p{So}].*")==Boolean.TRUE){
+                throw new DataNotFoundException("회원 이름에 이모티콘은 불가능합니다");
+            } else if(userName.length()<2){
+                throw new DataNotFoundException("회원이름은 2자 이상이어야 합니다");
+            }
+        } else if (userName==null || userName.equals("null")) {
+            throw new DataNotFoundException("회원이름은 2자 이상이어야 합니다");
         }
+
+//        if (userName == null || userName.equals("null")) {
+//            throw new DataNotFoundException("회원 이름은 필수입니다");
+//        } else if(userName.length()<2){
+//            throw new DataNotFoundException("회원 이름은 2자 이상이어야 합니다");
+//        }
 
         if (password != null) {
             if(password.matches(".*[\\p{So}].*")==Boolean.TRUE){
