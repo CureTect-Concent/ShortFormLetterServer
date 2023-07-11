@@ -5,10 +5,9 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Getter
 @Setter
-public class TokenUser {
-    private String accessToken;
-    private String refreshToken;
+@Getter
+public class NewRefreshToken {
+    private String newRefreshToken;
     private LocalDateTime expiredTokenTime;
 }

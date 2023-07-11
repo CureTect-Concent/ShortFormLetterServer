@@ -1,6 +1,10 @@
 package com.shotFormLetter.sFL.domain.member.config;
 
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shotFormLetter.sFL.domain.member.token.CustomAuthenticationEntryPoint;
 import com.shotFormLetter.sFL.domain.member.token.JwtAuthenticationFilter;
+import com.shotFormLetter.sFL.domain.member.token.JwtExceptionFilter;
 import com.shotFormLetter.sFL.domain.member.token.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectMapper objectMapper;
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
@@ -32,6 +37,9 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+
+
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -41,11 +49,16 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()//URL 관리
                 .authorizeRequests()
-                .antMatchers("/join","/public/**","/swagger-ui.html","/login","/h2-console/**","/post/open/{uuid}","/music/upload","/music/list").permitAll()
+                .antMatchers("/join","/public/**","/swagger-ui.html","/login",
+                        "/h2-console/**","/post/open/{uuid}","/music/upload","/music/list","/change-accesstoken").permitAll()
                 .anyRequest().authenticated()
                 .and()
+                .exceptionHandling()
+                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+                .and()
                 // JwtAuthenticationFilter를 먼저 적용
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtExceptionFilter(objectMapper), JwtAuthenticationFilter.class);
         return http.build();
     }
 }

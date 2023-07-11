@@ -1,5 +1,6 @@
 package com.shotFormLetter.sFL.domain.member.token;
 
+import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -13,9 +14,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component
@@ -24,7 +23,9 @@ public class JwtTokenProvider {
     @Value("${JWTSECRETKEY}")
     private String secretKey;
 
-    private long tokenValidTime = 30 * 60 * 1000L * 24 * 300;     // 토큰 유효시간 300일
+    private long accessTokenValidTime = 3 * 60 * 1000L;     // 토큰 유효시간 1분
+    private long refreshTokenValidTime= 5 * 60 * 1000L; //리프레시 3분 // 새로 추가된놈
+
 
     private final UserDetailsService userDetailsService;
 
@@ -42,10 +43,23 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setClaims(claims) // 정보 저장
                 .setIssuedAt(now) // 토큰 발행 시간 정보
-                .setExpiration(new Date(now.getTime() + tokenValidTime)) // 토큰 유효시각 설정
+                .setExpiration(new Date(now.getTime() + accessTokenValidTime)) // 토큰 유효시각 설정
                 .signWith(SignatureAlgorithm.HS256, secretKey)  // 암호화 알고리즘과, secret 값
                 .compact();
     }
+
+    // Refresh Token 생성 // 새로 추가된놈
+    public String createRefreshToken(String userPk) {
+        Claims claims = Jwts.claims().setSubject(userPk); // JWT payload에 저장되는 정보 단위
+        Date now = new Date();
+        return Jwts.builder()
+                .setClaims(claims) // 정보 저장
+                .setIssuedAt(now) // 토큰 발행 시간 정보
+                .setExpiration(new Date(now.getTime() + refreshTokenValidTime)) // 토큰 유효시각 설정
+                .signWith(SignatureAlgorithm.HS256, secretKey) // 암호화 알고리즘과 secret 값
+                .compact();
+    }
+
 
     // 인증 정보 조회
     public UsernamePasswordAuthenticationToken getAuthentication(String token) {
@@ -70,6 +84,22 @@ public class JwtTokenProvider {
         }
     }
 
+
+    // 추가 된놈
+    public boolean validateRefreshToken(String jwtToken) {
+        try {
+            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
+            return !claims.getBody().getExpiration().before(new Date());
+        } catch (Exception e) {
+            throw new DataNotFoundException("토큰만료");
+        }
+    }
+
+
+    // 추가 된놈
+    public String resolveRefreshToken(HttpServletRequest request) {
+        return request.getHeader("X-REFRESH-TOKEN");
+    }
     // Request의 Header에서 token 값 가져오기
     public String resolveToken(HttpServletRequest request) {
         return request.getHeader("X-AUTH-TOKEN");

@@ -2,6 +2,8 @@ package com.shotFormLetter.sFL.domain.member.service;
 
 
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
+import com.shotFormLetter.sFL.ExceptionHandler.DataNotMatchException;
+import com.shotFormLetter.sFL.ExceptionHandler.DataNotUploadException;
 import com.shotFormLetter.sFL.domain.member.dto.*;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.repository.MemberRepository;
@@ -11,10 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -54,24 +56,64 @@ public class MemberService {
         Member member = memberRepository.findByUserId(loginDto.getUserId())
                 .orElseThrow(() -> new DataNotFoundException("가입되지 않은 ID 입니다"));
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
-            throw new DataNotFoundException("잘못된 비밀번호입니다");
+            throw new DataNotMatchException("잘못된 비밀번호입니다");
         }
-        System.out.println(member.getUsername());
-        String token = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
+        LocalDateTime tokenTime=LocalDateTime.now();
+        String accessToken = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
+        String refreshToken= jwtTokenProvider.createRefreshToken(member.getUsername());
         TokenUser tokenUser =new TokenUser();
-        tokenUser.setToken(token);
+        tokenUser.setAccessToken(accessToken);
+        tokenUser.setRefreshToken(refreshToken);
+        tokenUser.setExpiredTokenTime(tokenTime.plusWeeks(2));
         return tokenUser;
     }
 
     public Member tokenMember(String token){
-        String userId = jwtTokenProvider.getUserPk(token);
-        System.out.println(userId);
-        Optional<Member> optionalMember = memberRepository.findByUserId(userId);
-        if (!optionalMember.isPresent()) {
-            throw new IllegalStateException("User not found");
+
+        String userId=jwtTokenProvider.getUserPk(token);
+        Optional<Member> optionalMember =memberRepository.findByUserId(userId);
+        if(!optionalMember.isPresent()){
+            throw new DataNotMatchException("권한 없읍");
         }
         return optionalMember.get();
     }
+
+    public NewAccessToken newAccessToken(String refreshToken){
+        if(jwtTokenProvider.validateRefreshToken(refreshToken)==Boolean.FALSE){
+            throw new DataNotFoundException("토큰 만료");
+        }
+        String userId = jwtTokenProvider.getUserPk(refreshToken);
+        System.out.println(userId);
+        Optional<Member> optionalMember = memberRepository.findByUserId(userId);
+        if (!optionalMember.isPresent()) {
+            throw new DataNotFoundException("찾을 수 없음");
+        }
+
+        String accessToken = jwtTokenProvider.createRefreshToken(userId);
+        NewAccessToken newAccessToken= new NewAccessToken();
+        newAccessToken.setNewAccessToken(accessToken);
+        return newAccessToken;
+    }
+
+    public NewRefreshToken newRefreshToken(String accessToken){
+        if(jwtTokenProvider.validateToken(accessToken)==Boolean.FALSE){
+            throw new DataNotMatchException("토큰 만료");
+        }
+        String userId=jwtTokenProvider.getUserPk(accessToken);
+        Optional<Member> optionalMember = memberRepository.findByUserId(userId);
+        if (!optionalMember.isPresent()) {
+            throw new DataNotFoundException("찾을 수 없음");
+        }
+        LocalDateTime localDateTime=LocalDateTime.now();
+        LocalDateTime expiredTokenTime=localDateTime.plusWeeks(2);
+        String refreshToken= jwtTokenProvider.createRefreshToken(userId);
+
+        NewRefreshToken newRefreshToken=new NewRefreshToken();
+        newRefreshToken.setNewRefreshToken(refreshToken);
+        newRefreshToken.setExpiredTokenTime(expiredTokenTime);
+        return newRefreshToken;
+    }
+
 
     public String getUserIdFromMember(Member member) {
         return member.getUsername();
@@ -100,7 +142,7 @@ public class MemberService {
         } else{
             String checkfile=StringUtils.getFilenameExtension(userImageFile.getOriginalFilename());
             if(!(checkfile.matches("jpg") || checkfile.matches("png") ||checkfile.matches("jpeg") || checkfile.matches("gif"))){
-                throw new DataNotFoundException("음악 또는 동영상은 프로필 사진에 올릴수 없습니다.");
+                throw new DataNotUploadException("이미지가 아닌 파일은 올릴 수 없습니다");
             }
             // 기존 이미지가 있는 상태에서 새로운 이미지를 바꾸고샆다면?
             if(link!=null && isDelete==Boolean.FALSE){
@@ -110,7 +152,6 @@ public class MemberService {
                 link=s3UploadService.uploadProfile(userImageFile,member);
             }
         }
-
         if(userName.equals("null")){
             userName=member.getUserId();
         } else {
@@ -123,9 +164,6 @@ public class MemberService {
                 throw new DataNotFoundException("회원 이름에 이모티콘은 사용할 수 없습니다");
             }
         }
-        System.out.println("이름: "+userName);
-        System.out.println("사진 링크값: "+link);
-
         member.setProfile(link);
         member.setUserName(userName);
         memberRepository.save(member);

@@ -21,7 +21,7 @@ public interface PostService {
 
     Post updatePost(Long postId,String content,String title, String new_media_reference,Integer musicId,String userId,boolean openstauts,
                     List <MultipartFile> newImageList, List <MultipartFile> newthumbnailList);
-    PostInfoDto getPostInfo(Long postId);
+    PostInfoDto getPostInfo(Long postId,String userId);
 
     String getNewReference(String geturls,String new_meida_reference);
     PostInfoDto openPostDto(String postId);

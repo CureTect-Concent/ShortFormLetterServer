@@ -3,7 +3,9 @@ package com.shotFormLetter.sFL.domain.post.domain.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.shotFormLetter.sFL.ExceptionHandler.DataNotAccessException;
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
+import com.shotFormLetter.sFL.ExceptionHandler.DataNotMatchException;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.repository.MemberRepository;
 import com.shotFormLetter.sFL.domain.music.domain.dto.MusicInfo;
@@ -143,10 +145,12 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public PostInfoDto getPostInfo(Long postId){
+    public PostInfoDto getPostInfo(Long postId,String userId){
         Post post=postRepository.getPostByPostId(postId);
         if(post==null){
-            throw new IllegalStateException("게시글 조회 안됨");
+            throw new DataNotFoundException("게시글 조회 안됨");
+        } else if(!post.getMember().getUsername().equals(userId)){
+            throw new DataNotAccessException("접근권한 없음");
         }
         Integer view=post.getView();
         post.setView(view+1);
@@ -191,9 +195,9 @@ public class PostServiceImpl implements PostService{
                 MediaDtos.add(mediaDto);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            throw new DataNotMatchException("MediaDto 오류");
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new DataNotFoundException("Data 오류");
         }
         return MediaDtos;
     }
@@ -208,7 +212,7 @@ public class PostServiceImpl implements PostService{
 //            throw new IllegalStateException("게시글 조회 안됨");
         }
         if(post.getOpenStatus()==Boolean.FALSE){
-            throw new DataNotFoundException("접근권한 없음");
+            throw new DataNotAccessException("접근권한 없음");
         }
         Integer view=post.getView();
         post.setView(view+1);
@@ -251,18 +255,6 @@ public class PostServiceImpl implements PostService{
             postRepository.delete(getPost);
         }
     }
-//        MessageDto messageDto= new MessageDto();
-//        Post post= postRepository.getPostByPostId(getPostId);
-//        if(post==null){
-//            throw new DataNotFoundException("게시물 조회 안됨");
-//        } else {
-//            List<String> s3urls=post.getS3Urls();
-//            String postId=post.getPostId().toString();
-//            s3UploadService.deleteList(s3urls);
-//            postRepository.delete(post);
-//            messageDto.setMessage("삭제완료");
-//        }
-//        return messageDto;
 
     @Override
     public MessageDto getMessage(){

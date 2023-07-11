@@ -26,9 +26,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostController {
     private final PostService postService;
-    private final PostRepository postRepository;
     private final MemberService memberService;
-    private final s3UploadService s3UploadService;
 
 
     @PostMapping("/create")
@@ -68,16 +66,20 @@ public class PostController {
 
         Member tokenMember=memberService.tokenMember(token);
         String userId = memberService.getUserIdFromMember(tokenMember);
-        try {
-                postService.updatePost(postId,content,title, new_media_reference,musicId, userId,openstatus, newImageList,newthumbnailList);
-                MessageDto messageDto=new MessageDto();
-                messageDto.setMessage("수정완료");
-                return ResponseEntity.ok(messageDto);
-            } catch (DataNotFoundException e) {
-                MessageDto messageDto=new MessageDto();
-                messageDto.setMessage(e.getMessage());
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-            }
+        postService.updatePost(postId,content,title, new_media_reference,musicId, userId,openstatus, newImageList,newthumbnailList);
+        MessageDto messageDto=new MessageDto();
+        messageDto.setMessage("수정완료");
+        return ResponseEntity.ok(messageDto);
+//        try {
+//                postService.updatePost(postId,content,title, new_media_reference,musicId, userId,openstatus, newImageList,newthumbnailList);
+//                MessageDto messageDto=new MessageDto();
+//                messageDto.setMessage("수정완료");
+//                return ResponseEntity.ok(messageDto);
+//            } catch (DataNotFoundException e) {
+//                MessageDto messageDto=new MessageDto();
+//                messageDto.setMessage(e.getMessage());
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
+//            }
     }
 
     @GetMapping("/find")
@@ -91,28 +93,17 @@ public class PostController {
     @GetMapping("/find/{id}")
     public ResponseEntity<?> getInfo(@RequestHeader("X-AUTH-TOKEN") String token,
                                @PathVariable("id")Long postId){
-        try {
-            Member tokenMember=memberService.tokenMember(token);
-            String userId = memberService.getUserIdFromMember(tokenMember);
-            PostInfoDto postInfoDto=postService.getPostInfo(postId);
-            return ResponseEntity.ok(postInfoDto);
-        }catch (DataNotFoundException e) {
-            MessageDto messageDto=new MessageDto();
-            messageDto.setMessage(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-        }
+
+        Member tokenMember=memberService.tokenMember(token);
+        String userId = memberService.getUserIdFromMember(tokenMember);
+        PostInfoDto postInfoDto=postService.getPostInfo(postId,userId);
+        return ResponseEntity.ok(postInfoDto);
     }
 
     @GetMapping("/open/{uuid}")
     public ResponseEntity<?> openPost(@PathVariable("uuid") String postId) {
-        try {
-            PostInfoDto postInfoDto = postService.openPostDto(postId);
-            return ResponseEntity.ok(postInfoDto);
-        } catch (DataNotFoundException e) {
-            MessageDto messageDto=new MessageDto();
-            messageDto.setMessage(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-        }
+        PostInfoDto postInfoDto = postService.openPostDto(postId);
+        return ResponseEntity.ok(postInfoDto);
     }
 
     @PostMapping("/urls")
@@ -120,30 +111,20 @@ public class PostController {
                              @RequestBody PostIdDto postId){
         Member tokenMember=memberService.tokenMember(token);
         Long getId=postId.getPostId();
-        try{
-            String userId = memberService.getUserIdFromMember(tokenMember);
-            return ResponseEntity.ok(postService.urlMessage(getId,userId));
-        } catch (DataNotFoundException e){
-            MessageDto messageDto=new MessageDto();
-            messageDto.setMessage(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-        }
+        String userId = memberService.getUserIdFromMember(tokenMember);
+        return ResponseEntity.ok(postService.urlMessage(getId,userId));
     }
 
 
     @DeleteMapping("/delete")
     public ResponseEntity<?>  deletePost(@RequestBody DeletePostDto deletePostDto, @RequestHeader("X-AUTH-TOKEN")String token){
+
         Long userId=deletePostDto.getUserSeq();
         Long postId=deletePostDto.getPostId();
         Member tokenMember=memberService.tokenMember(token);
         MessageDto messageDto=new MessageDto();
-        try{
-            postService.deletePost(postId, userId);
-            messageDto.setMessage("삭제완료");
-            return ResponseEntity.ok(messageDto);
-        } catch (DataNotFoundException e) {
-            messageDto.setMessage(e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-        }
+        postService.deletePost(postId, userId);
+        messageDto.setMessage("삭제완료");
+        return ResponseEntity.ok(messageDto);
     }
 }

@@ -1,6 +1,9 @@
 package com.shotFormLetter.sFL;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shotFormLetter.sFL.domain.post.controller.PostController;
+import com.shotFormLetter.sFL.domain.post.domain.dto.MediaDto;
 import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.jar.JarException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,4 +55,31 @@ class SFlApplicationTests {
 //        Matcher matcher = pattern.matcher(name);
 //        System.out.println(matcher.find());
 //    }
+//    @Test
+//    public void make(){
+//        String ref="[{\"type\":\"IMAGE\",\"reference\":1688702425234},{\"type\":\"IMAGE\",\"reference\":1688702482621},{\"type\":\"IMAGE\",\"reference\":1688702510658},{\"type\":\"IMAGE\",\"reference\":1688702568886},{\"type\":\"IMAGE\",\"reference\":1688702586878},{\"type\":\"IMAGE\",\"reference\":1688702606805}]";
+//        List<String> list = new ArrayList<>();
+//        list.add("https://shotformletter-media-server.s3.ap-northeast-2.amazonaws.com/2/66/images/d6f4e26c-60f8-48e1-a3ad-e926988d7251.jpg");
+//        list.add("https://shotformletter-media-server.s3.ap-northeast-2.amazonaws.com/2/66/images/9ddad009-bd54-4e67-b4f7-6b8e300009cd.jpg");
+//        list.add("https://shotformletter-media-server.s3.ap-northeast-2.amazonaws.com/2/66/images/c2de78ba-2b0e-469b-886f-128c5be27c3c.jpg");
+//        list.add("https://shotformletter-media-server.s3.ap-northeast-2.amazonaws.com/2/66/images/382f19e4-43d1-4427-b218-0c1914e8cd49.jpg");
+//        list.add("https://shotformletter-media-server.s3.ap-northeast-2.amazonaws.com/2/66/images/29ea28f1-ec3e-4d94-9e1c-45492ba10717.jpg");
+//        list.add("https://shotformletter-media-server.s3.ap-northeast-2.amazonaws.com/2/66/images/825ff003-d6f3-420a-a08c-295c5f4bff3e.gif");
+//
+//
+//
+//        List<MediaDto> MediaDtos=new ArrayList<>();
+//        JSONArray jsonArray = new JSONArray(ref);
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+//
+//        for(int i =0; i<jsonArray.length(); i++){
+//            JSONObject jsonObject = jsonArray.getJSONObject(i);
+//            String url = list.get(i);;
+//            jsonObject.put("s3url", url);
+//            MediaDto mediaDto=objectMapper.readValue(jsonObject.toString(),MediaDto.class);
+//            MediaDtos.add(mediaDto);
+//        }
+//    }
+
 }
