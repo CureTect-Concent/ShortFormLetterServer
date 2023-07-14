@@ -4,7 +4,10 @@ import com.shotFormLetter.sFL.domain.member.dto.*;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.service.MemberService;
 
+import com.shotFormLetter.sFL.domain.member.dto.RefreshTokenDto;
 import com.shotFormLetter.sFL.domain.post.domain.dto.MessageDto;
+//import com.shotFormLetter.sFL.domain.statistics.domain.entity.Statistics;
+//import com.shotFormLetter.sFL.domain.statistics.domain.service.StatisticsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;;
 import org.springframework.http.ResponseEntity;
@@ -12,21 +15,22 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
-
-
+//    private final StatisticsService statisticsService;
 
     // 회원가입 API
     @PostMapping("/join")
     public ResponseEntity<?> join(@Valid @RequestBody MemberDto memberDto) {
 
         MessageDto messageDto = new MessageDto();
-        memberService.join(memberDto);
+        Long memberId=memberService.join(memberDto);
+//        statisticsService.BasicCreateStatistics(memberId);
         messageDto.setMessage("회원 가입이 완료되었습니다");
         return ResponseEntity.ok(messageDto);
     }
@@ -65,16 +69,30 @@ public class MemberController {
 
 
     @PostMapping("/change-accesstoken")
-    public ResponseEntity<?> updateAccessToken(@RequestHeader("X-REFRESH-TOKEN")String refreshToken){
-        NewAccessToken newAccessToken= memberService.newAccessToken(refreshToken);
+    public ResponseEntity<?> updateAccessToken(@RequestBody RefreshTokenDto refreshTokenDto){
+        NewAccessToken newAccessToken= memberService.newAccessToken(refreshTokenDto.getRefreshToken());
         return ResponseEntity.ok(newAccessToken);
     }
 
     @PostMapping("/change-refreshtoken")
-    public ResponseEntity<?> updateRefreshToken(@RequestHeader("X-AUTH-TOKEN")String accessToken){
-
-        NewRefreshToken newRefreshToken= memberService.newRefreshToken(accessToken);
+    public ResponseEntity<?> updateRefreshToken(@RequestBody TokenDto tokenDto){
+        NewRefreshToken newRefreshToken= memberService.newRefreshToken(tokenDto.getAccessToken(),tokenDto.getRefreshToken(),LocalDateTime.now());
         return ResponseEntity.ok(newRefreshToken);
+    }
+
+    @DeleteMapping("/deleteuser")
+    public ResponseEntity<?> deleteUser(@RequestHeader("X-AUTH-TOKEN")String accessToken,
+                                        @RequestBody DeleteUserDto deleteUserDto){
+
+        MessageDto messageDto = new MessageDto();
+        memberService.deleteUser(accessToken,deleteUserDto);
+        messageDto.setMessage("회원 탈퇴가 완료되었습니다");
+        return ResponseEntity.ok(messageDto);
+    }
+
+    @DeleteMapping("/delete-token")
+    public ResponseEntity<?> deleteToken(@RequestBody DeleteTokenDto deleteTokenDto){
+        return memberService.deleteToken(deleteTokenDto);
     }
 }
 

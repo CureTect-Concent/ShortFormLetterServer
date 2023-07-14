@@ -3,10 +3,8 @@ package com.shotFormLetter.sFL.domain.member.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
-@Setter
 @Getter
-public class NewAccessToken {
-    private String newAccessToken;
+@Setter
+public class RefreshTokenDto {
+    private String refreshToken;
 }

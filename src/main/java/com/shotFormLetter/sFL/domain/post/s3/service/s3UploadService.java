@@ -1,6 +1,7 @@
 package com.shotFormLetter.sFL.domain.post.s3.service;
 
 import com.shotFormLetter.sFL.domain.member.entity.Member;
+import com.shotFormLetter.sFL.domain.post.domain.dto.DeletePostDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -136,7 +137,7 @@ public class s3UploadService {
             String imageurls = urls.substring(s3baseUrl.length());
             String extension = imageurls.substring(imageurls.lastIndexOf('.'));
             String thumbnailUrls = imageurls.replace("images", "thumbnail");
-            String deletethumbnail = thumbnailUrls.replace(extension, ".jpg");
+            String deletethumbnail = thumbnailUrls.replace(extension, ".JPG");
             deleteImage(imageurls);
             deleteImage(deletethumbnail);
         }
@@ -156,6 +157,11 @@ public class s3UploadService {
     public void deleteUserImage(String profile){
         String getDeleteKey=profile.substring(s3baseUrl.length());
         deleteImage(getDeleteKey);
+    }
+
+    public void test(DeletePostDto deletePostDto){
+        String deleteKey=deletePostDto.getUserSeq().toString() + "/" + deletePostDto.getPostId().toString();
+        deleteImage(deleteKey);
     }
 }
 

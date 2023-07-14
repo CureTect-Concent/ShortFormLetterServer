@@ -1,6 +1,7 @@
 package com.shotFormLetter.sFL.domain.member.token;
 
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
+import com.shotFormLetter.sFL.ExceptionHandler.DataNotMatchException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -23,8 +26,8 @@ public class JwtTokenProvider {
     @Value("${JWTSECRETKEY}")
     private String secretKey;
 
-    private long accessTokenValidTime = 3 * 60 * 1000L;     // 토큰 유효시간 1분
-    private long refreshTokenValidTime= 5 * 60 * 1000L; //리프레시 3분 // 새로 추가된놈
+    private long accessTokenValidTime = 24 * 60 * 60 * 1000L;
+    private long refreshTokenValidTime = 14 * 24 * 60 * 60 * 1000L;
 
 
     private final UserDetailsService userDetailsService;
@@ -78,6 +81,7 @@ public class JwtTokenProvider {
     public boolean validateToken(String jwtToken) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
+            System.out.println(claims);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
             return false;
@@ -91,9 +95,34 @@ public class JwtTokenProvider {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
             return !claims.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
-            throw new DataNotFoundException("토큰만료");
+            return false;
         }
     }
+
+    public boolean checkRefreshToken(String refreshToken, LocalDateTime localDateTime) {
+        Date refreshTokenExpiration = getRefreshTokenExpiration(refreshToken);
+
+        if (refreshTokenExpiration != null) {
+            LocalDateTime refreshTokenExpirationDateTime = refreshTokenExpiration.toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+
+            LocalDateTime oneDayBeforeExpiration = refreshTokenExpirationDateTime.minusDays(1);
+            return localDateTime.isBefore(refreshTokenExpirationDateTime) && localDateTime.isAfter(oneDayBeforeExpiration);
+        }
+        return false;
+    }
+
+    public Date getRefreshTokenExpiration(String refreshToken) {
+        try {
+            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(refreshToken);
+            return claims.getBody().getExpiration();
+        } catch (Exception e) {
+            // 예외 처리 로직 작성
+            throw new DataNotMatchException("삭제된 토큰 입니다");
+        }
+    }
+
 
 
     // 추가 된놈

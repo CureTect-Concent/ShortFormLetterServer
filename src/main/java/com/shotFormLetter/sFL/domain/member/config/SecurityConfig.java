@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .and()//URL 관리
                 .authorizeRequests()
                 .antMatchers("/join","/public/**","/swagger-ui.html","/login",
-                        "/h2-console/**","/post/open/{uuid}","/music/upload","/music/list","/change-accesstoken").permitAll()
+                        "/h2-console/**","/post/open/{uuid}","/music/upload","/music/list","/change-accesstoken","/post/test","/change-refreshtoken").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .exceptionHandling()

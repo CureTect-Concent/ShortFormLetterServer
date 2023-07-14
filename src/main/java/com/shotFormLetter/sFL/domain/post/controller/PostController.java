@@ -1,6 +1,7 @@
 package com.shotFormLetter.sFL.domain.post.controller;
 
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
+import com.shotFormLetter.sFL.ExceptionHandler.UnauthorizedException;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.service.MemberService;
 import com.shotFormLetter.sFL.domain.post.domain.dto.*;
@@ -27,7 +28,7 @@ import java.util.List;
 public class PostController {
     private final PostService postService;
     private final MemberService memberService;
-
+    private final s3UploadService s3UploadService;
 
     @PostMapping("/create")
     public MessageDto createPost (@RequestParam(value = "title") String title,
@@ -127,4 +128,12 @@ public class PostController {
         messageDto.setMessage("삭제완료");
         return ResponseEntity.ok(messageDto);
     }
+
+//    @DeleteMapping("/test")
+//    public ResponseEntity<?> testDelete(@RequestBody DeletePostDto deletePostDto){
+//        s3UploadService.test(deletePostDto);
+//        return ResponseEntity.ok("확인 ㄱㄱ");
+//    }
+
+
 }

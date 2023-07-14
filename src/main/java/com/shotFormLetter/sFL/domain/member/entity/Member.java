@@ -34,6 +34,8 @@ public class Member implements UserDetails {
     @Column
     private String profile;
 
+    @Column
+    private String refreshToken;
 
     @ElementCollection(fetch = FetchType.EAGER) //roles 컬렉션
     @Builder.Default
