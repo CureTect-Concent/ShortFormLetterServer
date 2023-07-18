@@ -3,7 +3,7 @@ name: Pull and Run Container
 on:
   push:
     branches:
-      - refac
+      - action
 
 jobs:
   build:
