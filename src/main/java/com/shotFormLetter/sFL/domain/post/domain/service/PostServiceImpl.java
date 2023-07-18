@@ -93,7 +93,6 @@ public class PostServiceImpl implements PostService{
 
 
         if(newImageList!=null && newthumbnailList!=null){
-            System.out.println("업데이트 실행");
             geturls=s3UploadService.updategetUrls(newImageList,geturls,post_id,id);
             s3UploadService.updateThumbnail(newthumbnailList,post_id,id);
         }
