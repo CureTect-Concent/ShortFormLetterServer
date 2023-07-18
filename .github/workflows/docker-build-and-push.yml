@@ -26,6 +26,7 @@ jobs:
       - run: cat ./src/main/resources/application.properties
 
 
+
       - name: Build and push
         run:
           ./gradlew build
