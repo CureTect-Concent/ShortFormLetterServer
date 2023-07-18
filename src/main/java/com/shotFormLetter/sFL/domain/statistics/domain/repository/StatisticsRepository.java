@@ -6,5 +6,5 @@
 //
 //public interface StatisticsRepository extends JpaRepository<Statistics,Long> {
 //
-//    Statistics getStatisticsById(Member member);
+//    Statistics getStatisticsByMember(Member member);
 //}

@@ -2,6 +2,7 @@ package com.shotFormLetter.sFL;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import com.shotFormLetter.sFL.domain.post.controller.PostController;
 import com.shotFormLetter.sFL.domain.post.domain.dto.MediaDto;
 import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
@@ -82,4 +83,97 @@ class SFlApplicationTests {
 //        }
 //    }
 
+//    @Test
+//    public void test(){
+//        String now_reference = "[{\"type\":\"VIDEO\",\"reference\":\"a\"},{\"type\":\"IMAGE\",\"reference\":\"b\"},{\"type\":\"IMAGE\",\"reference\":\"c\"},{\"type\":\"IMAGE\",\"reference\":\"d\"}]";
+//        String deleteList = "[a,b]";
+//
+//        // Convert now_reference to JSONArray
+//        JSONArray jsonArray = new JSONArray(now_reference);
+//
+//        // Convert deleteList to JSONArray
+//        JSONArray deleteArray = new JSONArray(deleteList);
+//
+//        List<String> alist = new ArrayList<>();
+//        alist.add("a");
+//        alist.add("b");
+//        alist.add("c");
+//        alist.add("d");
+//        // Remove references from now_reference based on deleteList
+//        for (int i = 0; i<jsonArray.length(); i++) {
+//            JSONObject item = jsonArray.getJSONObject(i);
+//            if (deleteArray.toList().contains(item.getString("reference"))) {
+//                jsonArray.remove(i);
+//                alist.remove(i);
+//            }
+//        }
+//
+//        // Convert JSONArray back to string
+//        String updatedNowReference = jsonArray.toString();
+//        System.out.println(alist);
+//        System.out.println(updatedNowReference);
+//    }
+
+    @Test
+    public void test(){
+        String now_reference = "[{\"type\":\"VIDEO\",\"reference\":1},{\"type\":\"IMAGE\",\"reference\":2},{\"type\":\"IMAGE\",\"reference\":3},{\"type\":\"IMAGE\",\"reference\":4}]";
+        String new_media_reference = "[{\"type\":\"IMAGE\",\"reference\":5},{\"type\":\"IMAGE\",\"reference\":6}]";
+        String list = "[\"1\",\"2\"]";
+        List<String> alist = new ArrayList<>();
+        alist.add("1");
+        alist.add("2");
+        alist.add("3");
+        alist.add("4");
+
+        // now_reference를 JSONArray로 변환
+        JSONArray nowReferenceArray = new JSONArray(now_reference);
+        // new_media_reference를 JSONArray로 변환
+        JSONArray newMediaReferenceArray = new JSONArray(new_media_reference);
+        JSONArray listArray = new JSONArray(list);
+
+        try {
+            // new_media_reference의 요소들을 now_reference에 추가
+            for (int i = 0; i < newMediaReferenceArray.length(); i++) {
+                nowReferenceArray.put(newMediaReferenceArray.getJSONObject(i));
+            }
+        } catch (JSONException e) {
+            System.out.println("실패");
+        }
+
+        System.out.println(nowReferenceArray.toString());
+
+        List<Long> deleteList = convertToList(listArray);
+
+        for (int i = nowReferenceArray.length() - 1; i >= 0; i--) {
+            try {
+                JSONObject item = nowReferenceArray.getJSONObject(i);
+                long ref = item.getLong("reference");
+                if (deleteList.contains(ref)) {
+                    nowReferenceArray.remove(i);
+                    alist.remove(i);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        String modifiedNowReference = nowReferenceArray.toString();
+        System.out.println(modifiedNowReference);
+        System.out.println(alist);
+    }
+
+    private static List<Long> convertToList(JSONArray jsonArray) {
+        List<Long> list = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            try {
+                long value = jsonArray.getLong(i);
+                list.add(value);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
+    }
+
 }
+

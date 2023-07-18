@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.io.IOException;
 
@@ -54,6 +55,15 @@ public class GlobalExceptionHandler {
         // 에러 응답 생성
         String errorMessage = ex.getMessage();
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    }
+
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Object> handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException ex) {
+        messageDto.setMessage("파일 용량의 합은 100MB 까지 가능합니다");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(messageDto);
     }
 
 }

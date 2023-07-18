@@ -66,7 +66,8 @@ public class s3UploadService {
         }
         return s3Urls;
     }
-    public List<String> updategetUrls(List<MultipartFile> newImageList, String userId, List<String> s3Urls, String postId,String id) {
+    public List<String> updategetUrls(List<MultipartFile> newImageList, List<String> s3Urls, String postId,String id) {
+        System.out.println(s3Urls);
         for (MultipartFile file : newImageList) {
             String key =id + "/" + postId +"/images/" + file.getOriginalFilename();
             try {
@@ -143,6 +144,14 @@ public class s3UploadService {
         }
     }
 
+    public void deleteOneImage(String s3urls){
+        String imageurls = s3urls.substring(s3baseUrl.length());
+        String extension = imageurls.substring(imageurls.lastIndexOf('.'));
+        String thumbnailUrls = imageurls.replace("images", "thumbnail");
+        String deletethumbnail = thumbnailUrls.replace(extension, ".JPG");
+        deleteImage(imageurls);
+        deleteImage(deletethumbnail);
+    }
 
 
     public void deleteImage(String urls){

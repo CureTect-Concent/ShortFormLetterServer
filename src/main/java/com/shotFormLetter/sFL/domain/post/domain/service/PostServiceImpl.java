@@ -1,5 +1,8 @@
 package com.shotFormLetter.sFL.domain.post.domain.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -12,10 +15,7 @@ import com.shotFormLetter.sFL.domain.music.domain.dto.MusicInfo;
 import com.shotFormLetter.sFL.domain.music.domain.entity.Music;
 import com.shotFormLetter.sFL.domain.music.domain.repository.MusicRepository;
 import com.shotFormLetter.sFL.domain.music.domain.service.MusicService;
-import com.shotFormLetter.sFL.domain.post.domain.dto.MediaDto;
-import com.shotFormLetter.sFL.domain.post.domain.dto.MessageDto;
-import com.shotFormLetter.sFL.domain.post.domain.dto.PostInfoDto;
-import com.shotFormLetter.sFL.domain.post.domain.dto.ThumbnailDto;
+import com.shotFormLetter.sFL.domain.post.domain.dto.*;
 import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
 import com.shotFormLetter.sFL.domain.post.domain.repository.PostRepository;
 //import com.shotFormLetter.sFL.domain.post.s3.service.s3Service;
@@ -75,32 +75,43 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public Post updatePost(Long postId,String content,String title, String new_media_reference,Integer musicId,
+    public Post updatePost(Long postId,String content,String title, String new_media_reference,String delete_index,Integer musicId,
                            String userId,boolean openstauts, List <MultipartFile> newImageList, List <MultipartFile> newthumbnailList){
         Post post =postRepository.getPostByPostId(postId);
         if(post==null){
             throw new IllegalStateException("게시글 조회 안됨");
         }
+
+        System.out.println(new_media_reference);
+        MediaAndUrlsDto mediaAndUrlsDto=new MediaAndUrlsDto();
+        String id=post.getMember().getId().toString();
+        List<String> geturls=post.getS3Urls();
         String post_id=postId.toString();
-        String user_pk=post.getMember().getId().toString();
         String now_reference=post.getMedia_reference();
+
+
+        if(newImageList!=null && newthumbnailList!=null){
+            geturls=s3UploadService.updategetUrls(newImageList,geturls,post_id,id);
+            s3UploadService.updateThumbnail(newthumbnailList,post_id,id);
+        }
+
         if (now_reference.equals("null") && new_media_reference.equals("null")) {
             now_reference="null";
         } else if(!now_reference.equals("null") && !new_media_reference.equals("null")){
-            now_reference=getNewReference(now_reference,new_media_reference);
+            now_reference=getReference(now_reference,new_media_reference);
         } else if(!now_reference.equals("null")&& new_media_reference.equals("null") ){
             now_reference=now_reference;
         } else {
             now_reference=new_media_reference;
         }
-        System.out.println("결과: "+now_reference);
 
-        String id=post.getMember().getId().toString();
-        List<String> geturls=post.getS3Urls();
-        if(newImageList!=null && newthumbnailList!=null){
-            geturls=s3UploadService.updategetUrls(newImageList,userId,geturls,postId.toString(),id);
-            s3UploadService.updateThumbnail(newthumbnailList,post_id,user_pk);
+
+        if (!delete_index.equals("null")){
+            mediaAndUrlsDto=getNewReference(now_reference,delete_index,geturls);
+            now_reference=mediaAndUrlsDto.getNow_reference();
+            geturls=mediaAndUrlsDto.getS3urls();
         }
+
 
         post.setContent(content);
         post.setTitle(title);
@@ -112,22 +123,67 @@ public class PostServiceImpl implements PostService{
         postRepository.save(post);
         return post;
     }
+
+
     @Override
-    public String getNewReference(String now_reference,String new_meida_reference){
+    public String getReference(String now_reference,String delete_index){
         try {
             // geturls를 JSONArray로 변환
             JSONArray urls = new JSONArray(now_reference);
-            JSONArray new_urls = new JSONArray(new_meida_reference);
+            JSONArray new_urls = new JSONArray(delete_index);
             for (int i = 0; i < new_urls.length(); i++) {
                 urls.put(new_urls.getJSONObject(i));
             }
-                return urls.toString();
+            return urls.toString();
         } catch (JSONException e) {
             e.printStackTrace();
             return now_reference;
         }
+    }
+
+    @Override
+    public MediaAndUrlsDto getNewReference(String now_reference,String list,List<String> geturls){
+        JSONArray nowRef= new JSONArray(now_reference);
+        JSONArray deleteRef = new JSONArray(list);
+        List<Long> deleteList=converToList(deleteRef);
+
+        for (int i=nowRef.length()-1; i>=0; i--){
+            try {
+                JSONObject getObejet = nowRef.getJSONObject(i);
+                long ref = getObejet.getLong("reference");
+                if (deleteList.contains(ref)) {
+                    nowRef.remove(i);
+                    System.out.println(geturls.get(i));
+                    s3UploadService.deleteOneImage(geturls.get(i));
+                    geturls.remove(i);
+                }
+            } catch (JSONException e){
+                throw new JSONException("매칭 실패");
+            }
+        }
+
+        System.out.println(geturls);
+        MediaAndUrlsDto mediaAndUrlsDto=new MediaAndUrlsDto();
+        mediaAndUrlsDto.setNow_reference(nowRef.toString());
+        mediaAndUrlsDto.setS3urls(geturls);
+        return mediaAndUrlsDto;
 
     }
+
+    @Override
+    public List<Long> converToList(JSONArray jsonArray){
+        List<Long> list = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            try {
+                long value = jsonArray.getLong(i);
+                list.add(value);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return list;
+    }
+
 
     @Override
     public List<ThumbnailDto> getThumbnailList(String userId){

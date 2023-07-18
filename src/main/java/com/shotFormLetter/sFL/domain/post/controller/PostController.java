@@ -1,25 +1,26 @@
 package com.shotFormLetter.sFL.domain.post.controller;
 
-import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
-import com.shotFormLetter.sFL.ExceptionHandler.UnauthorizedException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.service.MemberService;
 import com.shotFormLetter.sFL.domain.post.domain.dto.*;
 
-import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
-import com.shotFormLetter.sFL.domain.post.domain.repository.PostRepository;
 import com.shotFormLetter.sFL.domain.post.domain.service.PostService;
 
 import com.shotFormLetter.sFL.domain.post.s3.service.s3UploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 @Slf4j
 @RestController
@@ -60,6 +61,7 @@ public class PostController {
                                         @RequestParam(value = "imageList",required = false) List <MultipartFile> newImageList,
                                         @RequestParam(value = "thumbnailList",required = false) List <MultipartFile> newthumbnailList,
                                         @RequestParam(value="media_reference",required = false) String new_media_reference,
+                                        @RequestParam(value = "delete_reference",required = false) String delete_index,
                                         @RequestParam(value = "openStatus") boolean openstatus,
                                         @RequestParam(value = "musicId",required = false)Integer musicId,
                                         @RequestHeader("X-AUTH-TOKEN")String token){
@@ -67,20 +69,10 @@ public class PostController {
 
         Member tokenMember=memberService.tokenMember(token);
         String userId = memberService.getUserIdFromMember(tokenMember);
-        postService.updatePost(postId,content,title, new_media_reference,musicId, userId,openstatus, newImageList,newthumbnailList);
+        postService.updatePost(postId,content,title, new_media_reference,delete_index,musicId, userId,openstatus, newImageList,newthumbnailList);
         MessageDto messageDto=new MessageDto();
         messageDto.setMessage("수정완료");
         return ResponseEntity.ok(messageDto);
-//        try {
-//                postService.updatePost(postId,content,title, new_media_reference,musicId, userId,openstatus, newImageList,newthumbnailList);
-//                MessageDto messageDto=new MessageDto();
-//                messageDto.setMessage("수정완료");
-//                return ResponseEntity.ok(messageDto);
-//            } catch (DataNotFoundException e) {
-//                MessageDto messageDto=new MessageDto();
-//                messageDto.setMessage(e.getMessage());
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageDto);
-//            }
     }
 
     @GetMapping("/find")
@@ -129,11 +121,6 @@ public class PostController {
         return ResponseEntity.ok(messageDto);
     }
 
-//    @DeleteMapping("/test")
-//    public ResponseEntity<?> testDelete(@RequestBody DeletePostDto deletePostDto){
-//        s3UploadService.test(deletePostDto);
-//        return ResponseEntity.ok("확인 ㄱㄱ");
-//    }
 
 
 }
