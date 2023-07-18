@@ -77,6 +77,8 @@ public class PostServiceImpl implements PostService{
     @Override
     public Post updatePost(Long postId,String content,String title, String new_media_reference,String delete_index,Integer musicId,
                            String userId,boolean openstauts, List <MultipartFile> newImageList, List <MultipartFile> newthumbnailList){
+
+
         Post post =postRepository.getPostByPostId(postId);
         if(post==null){
             throw new IllegalStateException("게시글 조회 안됨");
@@ -91,9 +93,11 @@ public class PostServiceImpl implements PostService{
 
 
         if(newImageList!=null && newthumbnailList!=null){
+            System.out.println("업데이트 실행");
             geturls=s3UploadService.updategetUrls(newImageList,geturls,post_id,id);
             s3UploadService.updateThumbnail(newthumbnailList,post_id,id);
         }
+
 
         if (now_reference.equals("null") && new_media_reference.equals("null")) {
             now_reference="null";

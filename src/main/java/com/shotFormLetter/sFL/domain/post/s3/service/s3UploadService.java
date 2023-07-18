@@ -67,7 +67,6 @@ public class s3UploadService {
         return s3Urls;
     }
     public List<String> updategetUrls(List<MultipartFile> newImageList, List<String> s3Urls, String postId,String id) {
-        System.out.println(s3Urls);
         for (MultipartFile file : newImageList) {
             String key =id + "/" + postId +"/images/" + file.getOriginalFilename();
             try {
