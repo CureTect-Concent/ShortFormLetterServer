@@ -1,7 +1,7 @@
 package com.shotFormLetter.sFL.domain.member.token;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shotFormLetter.sFL.domain.member.dto.Code;
+import com.shotFormLetter.sFL.domain.member.dto.response.Code;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;

@@ -1,6 +1,6 @@
 package com.shotFormLetter.sFL.domain.member.token;
 
-import com.shotFormLetter.sFL.domain.member.dto.Code;
+import com.shotFormLetter.sFL.domain.member.dto.response.Code;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.security.core.AuthenticationException;

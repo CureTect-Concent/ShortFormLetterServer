@@ -2,6 +2,9 @@ package com.shotFormLetter.sFL.domain.member.token;
 
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotMatchException;
+import com.shotFormLetter.sFL.domain.member.entity.Member;
+import com.shotFormLetter.sFL.domain.member.repository.MemberRepository;
+import com.shotFormLetter.sFL.domain.member.service.MemberService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -31,7 +34,7 @@ public class JwtTokenProvider {
 
 
     private final UserDetailsService userDetailsService;
-
+    private final MemberRepository memberRepository;
     // 객체 초기화, secretKey를 Base64로 인코딩
     @PostConstruct
     protected void init() {
@@ -73,6 +76,10 @@ public class JwtTokenProvider {
     // 토큰에서 회원 정보 추출
     public String getUserPk(String token) {
         String k= Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+//        Optional<Member> optionalMember = memberRepository.findByUserId(k);
+//        if(optionalMember.get()==null){
+//            throw new DataNotMatchException("해당토큰은 없는 유저의 토큰 입니다");
+//        }
         System.out.println(k);
         return k;
     }

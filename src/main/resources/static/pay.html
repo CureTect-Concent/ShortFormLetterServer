@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head></head>
+<body>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.4.min.js" ></script>
+    <script type="text/javascript" src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+    <div>
+        <h2>IAMPORT TEST</h2>
+        <li>
+            <button id = "iamportPayment" type="button">test</button>
+        </li>
+    </div>
+    <script>
+        $("#iamportPayment").click(function() {
+            payment();
+        });
+<!--kakaopay.TC0ONETIME-->
+        function payment(data) {
+            IMP.init('imp57330126');
+            IMP.request_pay({
+                pg: "inicis",
+                pay_method: "card",
+                name: "도서",
+                amount: 1000,
+                buyer_email: "kimdo415@naver.com",
+                buyer_name: "홍길동",
+                buyer_tel: "01052656627"
+            }, function (rsp) {
+                if (rsp.success) {
+                    alert("완료")
+                } else {
+                    alert("실패 : 코드(" + rsp.error_code + ") / 메세지(" + rsp.error_msg + ")");
+                }
+            });
+        }
+    </script>
+</body>
+</html>

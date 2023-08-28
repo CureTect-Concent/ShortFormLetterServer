@@ -1,41 +1,29 @@
 package com.shotFormLetter.sFL;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
-import com.shotFormLetter.sFL.domain.post.controller.PostController;
-import com.shotFormLetter.sFL.domain.post.domain.dto.MediaDto;
-import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.shotFormLetter.sFL.domain.statistics.domain.entity.Statistics;
+import com.shotFormLetter.sFL.domain.statistics.domain.repository.StatisticsRepository;
+import com.shotFormLetter.sFL.domain.statistics.domain.service.StatisticsService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static org.assertj.core.api.InstanceOfAssertFactories.atomicIntegerFieldUpdater;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import javax.transaction.Transactional;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.jar.JarException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -174,6 +162,226 @@ class SFlApplicationTests {
 //        }
 //        return list;
 //    }
+
+    @Autowired
+    private StatisticsRepository statisticsRepository;
+
+    @Autowired
+    private StatisticsService statisticsService;
+    @Test
+    public void testTimeline(){
+        List<String> timeLine = new ArrayList<>();
+        for(int i=0; i<10; i++){
+            timeLine.add(LocalDate.now().toString());
+        }
+        System.out.println(timeLine);
+
+        List<LocalDate> localLine =new ArrayList<>();
+
+        for(String time:timeLine){
+            localLine.add(LocalDate.parse(time).plusDays(10));
+        }
+        System.out.println(localLine);
+    }
+
+    @Test
+    @Transactional
+    public void weekTimeLineSet(){
+//        LocalDate weektime=LocalDate.now();
+
+        String date="2023-07-24";
+        LocalDate weektime=LocalDate.parse(date);
+
+        LocalDate firstDayOfMonth = weektime;
+        LocalDate chek=firstDayOfMonth;
+        LocalDate reference=weektime;
+
+        if(weektime.getDayOfMonth()==1){
+            firstDayOfMonth=weektime.minusMonths(1);
+            chek=firstDayOfMonth;
+            reference=weektime.with(TemporalAdjusters.previous(DayOfWeek.MONDAY));
+        } else{
+            firstDayOfMonth=weektime.minusDays(weektime.getDayOfMonth()-1);
+            chek=firstDayOfMonth;
+        }
+        Integer week=1;
+
+
+        while(chek.isBefore(reference) || chek==reference){
+            DayOfWeek dayOfWeek=chek.getDayOfWeek();
+
+            if(dayOfWeek.equals(DayOfWeek.MONDAY)){
+                LocalDate last=chek.plusDays(6);
+                System.out.println(week+"번째 주의 시작과 끝");
+                System.out.println(chek);
+                System.out.println(last);
+                week = week+1;
+                chek=firstDayOfMonth.plusDays(6);
+                firstDayOfMonth=firstDayOfMonth.plusDays(6);
+            }
+
+
+            chek=firstDayOfMonth.with(TemporalAdjusters.previous(DayOfWeek.MONDAY));
+            LocalDate last=chek.plusDays(6);
+            System.out.println(week+"번째 주의 시작과 끝");
+            System.out.println(chek);
+            System.out.println(last);
+            week = week+1;
+            chek=firstDayOfMonth.plusDays(6);
+            firstDayOfMonth=firstDayOfMonth.plusDays(6);
+
+        }
+
+
+    }
+
+
+    @Test
+    @Transactional
+    public void monthLineSet(){
+        String date="2022-01-03";
+
+        LocalDate localDate=LocalDate.parse(date);
+        LocalDate start=localDate;
+        Integer during=0;
+        if(localDate.getMonthValue()==1){
+            start=localDate.minusYears(1);
+            during =12;
+        } else {
+            start=localDate.minusMonths(localDate.getMonthValue()-1);
+            during = localDate.getMonthValue()-1;
+        }
+
+        List<String> a=new ArrayList<>();
+
+        for(int i=0; i<during; i++){
+            LocalDate getTime=start.plusMonths(i);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+            String month= getTime.format(formatter);
+            a.add(month);
+        }
+
+        System.out.println(a);
+    }
+
+    @Test
+    @Transactional
+    public void timeLineSet(){
+        String date="2020-03-01";
+
+        LocalDate localDate=LocalDate.parse(date);
+
+
+        LocalDate start=localDate;
+
+        Integer during=0;
+
+        if(localDate.getDayOfMonth()==1){
+            start=localDate.minusMonths(1);
+            during=localDate.minusDays(1).getDayOfMonth();
+        }else{
+            start=localDate.minusDays(localDate.getDayOfMonth()-1);
+            during=localDate.getDayOfMonth()-1;
+        }
+
+        for(int i=0; i<during; i++){
+            System.out.println(start.plusDays(i).toString());
+        }
+
+
+        System.out.println(start.toString());
+        System.out.println(during);
+
+    }
+
+    @Test
+    @Transactional
+    public void testLine(){
+        Long meberId=1L;
+
+        List<Statistics> test = statisticsRepository.getListByMemberId(meberId);
+
+        List<String> aa =new ArrayList<>();
+
+        for(Statistics s : test){
+            List<String> monthLane=s.getViewTime();
+            for(String mt:monthLane){
+                LocalDateTime dateTime=LocalDateTime.parse(mt);
+                DateTimeFormatter formatter=DateTimeFormatter.ofPattern("yyyy-MM");
+                String month=dateTime.format(formatter);
+                aa.add(month);
+            }
+        }
+//
+        System.out.println(aa);
+
+        LocalDate timeLane=LocalDate.now();
+
+        Integer start=timeLane.getMonthValue()-1;
+
+        LocalDate monthLane=timeLane.minusMonths(start);
+
+        List<String> bb= new ArrayList<>();
+
+        List<Integer> cc= new ArrayList<>();
+        for(int i=0; i<start; i++){
+            LocalDate userMonthTimeLane=monthLane.plusMonths(i);
+            DateTimeFormatter formatter=DateTimeFormatter.ofPattern("yyyy-MM");
+            String month=userMonthTimeLane.format(formatter);
+            bb.add(month);
+            Integer cnt= Collections.frequency(aa,month);
+            cc.add(cnt);
+        }
+
+        System.out.println(bb);
+
+        System.out.println(cc);
+//
+//
+//        List<String> aa= new ArrayList<>();
+//        for(Statistics s : test){
+//            List<String> timeLane = s.getViewTime();
+//            for (int i=0; i<timeLane.size(); i++){
+//                LocalDateTime dateTime=LocalDateTime.parse(timeLane.get(i));
+//                aa.add(dateTime.toLocalDate().toString());
+//            }
+//        }
+//        System.out.println("추출결과");
+//        System.out.println(aa);
+//
+//        List<String> date = new ArrayList<>();
+//        List<Integer> count = new ArrayList<>();
+//
+//        String time="2023-07-24";
+//
+//        LocalDate localDate=LocalDate.parse(time);
+//
+//        Integer timeLine=localDate.getDayOfMonth()-1;
+//
+//        LocalDate startTime=localDate.minusDays(timeLine);
+//
+//        for(int i=0; i<timeLine; i++){
+//            LocalDate getTime=startTime.plusDays(i);
+//            date.add(getTime.toString());
+//        }
+//        System.out.println("타임 라인");
+//        System.out.println(date);
+//
+//        for(String s: date){
+//            System.out.println(s);
+//            Integer cnt = Collections.frequency(aa,s);
+//            System.out.println(cnt);
+//            count.add(cnt);
+//        }
+//
+//
+//        System.out.println("타임 라인 에 대한 조회수");
+//        System.out.println(count);
+
+    }
+
+
+
 
 }
 

@@ -1,7 +1,7 @@
 package com.shotFormLetter.sFL.ExceptionHandler;
 
 
-import com.shotFormLetter.sFL.domain.post.domain.dto.MessageDto;
+import com.shotFormLetter.sFL.domain.post.domain.dto.response.MessageDto;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.springframework.http.HttpStatus;

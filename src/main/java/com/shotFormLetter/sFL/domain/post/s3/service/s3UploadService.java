@@ -1,7 +1,7 @@
 package com.shotFormLetter.sFL.domain.post.s3.service;
 
 import com.shotFormLetter.sFL.domain.member.entity.Member;
-import com.shotFormLetter.sFL.domain.post.domain.dto.DeletePostDto;
+import com.shotFormLetter.sFL.domain.post.domain.dto.request.DeletePostDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -10,12 +10,10 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +46,19 @@ public class s3UploadService {
         }
     }
 
+    public String CopyImage(String imageUrl, String key){
+        URL originalImageUrl = s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(imageUrl).build());
+        // 이미지 이동
+        CopyObjectRequest copyRequest = CopyObjectRequest.builder()
+                .copySource(bucketName+imageUrl)
+                .destinationBucket(bucketName)
+                .destinationKey(key)
+                .build();
+        s3Client.copyObject(copyRequest);
+
+        String getUrl= "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + key;
+        return getUrl;
+    }
     private String generateImageUrl(String bucketName, String key) {
         // S3에서 업로드된 파일의 주소 생성
         String imageUrl = "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/" + key;
@@ -79,7 +90,7 @@ public class s3UploadService {
         return s3Urls;
     }
 
-    public void uploadThumbnail(List<MultipartFile> newthumbnailList, String userId, List<String> s3Urls,String postId,String id) {
+    public void uploadThumbnail(List<MultipartFile> newthumbnailList,String postId,String id) {
         for (MultipartFile file : newthumbnailList) {
             String key =id + "/" + postId +"/thumbnail/" +file.getOriginalFilename();
             try {

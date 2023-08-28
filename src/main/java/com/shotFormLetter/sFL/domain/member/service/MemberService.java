@@ -2,16 +2,22 @@ package com.shotFormLetter.sFL.domain.member.service;
 
 
 import com.shotFormLetter.sFL.ExceptionHandler.*;
-import com.shotFormLetter.sFL.domain.member.dto.*;
+import com.shotFormLetter.sFL.domain.member.controller.ChargeDto;
+import com.shotFormLetter.sFL.domain.member.dto.request.DeleteTokenDto;
+import com.shotFormLetter.sFL.domain.member.dto.request.LoginDto;
+import com.shotFormLetter.sFL.domain.member.dto.request.MemberDto;
+import com.shotFormLetter.sFL.domain.member.dto.response.*;
+import com.shotFormLetter.sFL.domain.member.dto.validation.EmojiDto;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.repository.MemberRepository;
 import com.shotFormLetter.sFL.domain.member.token.JwtTokenProvider;
-import com.shotFormLetter.sFL.domain.post.domain.dto.MessageDto;
+import com.shotFormLetter.sFL.domain.post.domain.dto.response.MessageDto;
 import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
 import com.shotFormLetter.sFL.domain.post.domain.repository.PostRepository;
 
 import com.shotFormLetter.sFL.domain.post.s3.service.s3UploadService;
 
+import com.shotFormLetter.sFL.domain.statistics.domain.service.StatisticsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -29,11 +36,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class MemberService {
+
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberRepository memberRepository;
     private final s3UploadService s3UploadService;
     private final PostRepository postRepository;
+
     @Transactional
     public Long join(MemberDto memberDto){
         memberDto.validate();
@@ -52,6 +61,8 @@ public class MemberService {
                 .password(passwordEncoder.encode(memberDto.getPassword()))
                 .profile(null)
                 .refreshToken(null)
+                .isBend(true)
+                .adsStatus(false)
                 .build();
         return memberRepository.save(member).getId();
     }
@@ -63,6 +74,9 @@ public class MemberService {
                 .orElseThrow(() -> new DataNotFoundException("가입되지 않은 ID 입니다"));
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
             throw new DataNotMatchException("잘못된 비밀번호입니다");
+        }
+        if(member.getIsBend()==false){
+            throw new DataNotAccessException("정지된 회원입니다");
         }
         String accessToken = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
         String refreshToken= jwtTokenProvider.createRefreshToken(member.getUsername());
@@ -79,11 +93,15 @@ public class MemberService {
 
         String userId=jwtTokenProvider.getUserPk(token);
         Optional<Member> optionalMember =memberRepository.findByUserId(userId);
-        if(!optionalMember.isPresent()){
-            throw new DataNotMatchException("권한 없음");
+        Member member = optionalMember.orElseThrow(() -> new DataNotAccessException("유저 정보가 없습니다"));
+        if (!member.getIsBend()) {
+            member.setRefreshToken(null);
+            memberRepository.save(member);
+            throw new UnauthorizedException("정지된 유저 입니다");
         }
         return optionalMember.get();
     }
+
 
     public NewAccessToken newAccessToken(String refreshToken){
         if(jwtTokenProvider.validateRefreshToken(refreshToken)==Boolean.FALSE){
@@ -101,7 +119,7 @@ public class MemberService {
     }
 
 
-    public NewRefreshToken newRefreshToken(String accessToken,String refreshToken ,LocalDateTime localDateTime){
+    public NewRefreshToken newRefreshToken(String accessToken, String refreshToken , LocalDateTime localDateTime){
         if(jwtTokenProvider.validateToken(accessToken)==Boolean.FALSE){
             throw new UnauthorizedException("토큰 만료");
         }
@@ -150,34 +168,40 @@ public class MemberService {
         userInfo.setUserName(tokenMember.getUserId());
         userInfo.setUserSeq(tokenMember.getId());
         userInfo.setUserProfile(tokenMember.getProfile());
+        userInfo.setAdsStatus(tokenMember.getAdsStatus());
         return userInfo;
     }
 
     public void change(Member member,MultipartFile userImageFile, String userName,Boolean isDelete){
         String link=member.getProfile();
         EmojiDto emojidto=new EmojiDto();
-        String emoji=emojidto.getrex();
 
         //기본이미지 보낸경우
         if(userImageFile==null) {
             // 기존 이미지가 있는 상태에서 깡통으로 바꾸고싶다면?
-            if(link!=null && isDelete==Boolean.TRUE){
+            if(link!=null && isDelete){
                 s3UploadService.deleteUserImage(link);
                 link=null;
             }
         } else{
             String checkfile=StringUtils.getFilenameExtension(userImageFile.getOriginalFilename());
-            if(!(checkfile.matches("jpg") || checkfile.matches("png") ||checkfile.matches("jpeg") || checkfile.matches("gif"))){
+            List<String> chekList= Arrays.asList("jpg", "png", "jpeg", "gif");
+            if(!chekList.contains(checkfile.toLowerCase())){
                 throw new DataNotUploadException("이미지가 아닌 파일은 올릴 수 없습니다");
             }
             // 기존 이미지가 있는 상태에서 새로운 이미지를 바꾸고샆다면?
-            if(link!=null && isDelete==Boolean.FALSE){
+//            if(link!=null && isDelete==Boolean.FALSE){
+//                s3UploadService.deleteUserImage(link);
+//                link=s3UploadService.uploadProfile(userImageFile,member);
+//            } else{
+//                link=s3UploadService.uploadProfile(userImageFile,member);
+//            }
+            if(link != null && !isDelete){
                 s3UploadService.deleteUserImage(link);
-                link=s3UploadService.uploadProfile(userImageFile,member);
-            } else{
-                link=s3UploadService.uploadProfile(userImageFile,member);
             }
+            link=s3UploadService.uploadProfile(userImageFile,member);
         }
+
         if(userName.equals("null")){
             userName=member.getUserId();
         } else {
@@ -190,13 +214,14 @@ public class MemberService {
                 throw new DataNotFoundException("회원 이름에 이모티콘은 사용할 수 없습니다");
             }
         }
+
         member.setProfile(link);
         member.setUserName(userName);
         memberRepository.save(member);
     }
 
 
-    public void deleteUser(String accessToken,DeleteUserDto deleteUserDto){
+    public void deleteUser(String accessToken, DeleteUserDto deleteUserDto){
         String userId=jwtTokenProvider.getUserPk(accessToken);
         Optional<Member> optionalMember = memberRepository.findByUserId(userId);
         if (!optionalMember.isPresent()) {
@@ -216,6 +241,17 @@ public class MemberService {
             s3UploadService.deleteUserImage(optionalMember.get().getProfile());
         }
         memberRepository.delete(optionalMember.get());
+    }
+
+    public void charge(ChargeDto chargeDto){
+        Optional<Member> optionalMember = memberRepository.findById(chargeDto.getId());
+        if (!optionalMember.isPresent()) {
+            throw new DataNotFoundException("찾을 수 없음");
+        }
+
+        optionalMember.get().setAdsStatus(true);
+        memberRepository.save(optionalMember.get());
+
     }
 }
 

@@ -1,20 +1,32 @@
 package com.shotFormLetter.sFL.domain.member.controller;
 
-import com.shotFormLetter.sFL.domain.member.dto.*;
+import com.shotFormLetter.sFL.domain.member.dto.request.DeleteTokenDto;
+import com.shotFormLetter.sFL.domain.member.dto.request.LoginDto;
+import com.shotFormLetter.sFL.domain.member.dto.request.MemberDto;
+import com.shotFormLetter.sFL.domain.member.dto.request.TokenDto;
+import com.shotFormLetter.sFL.domain.member.dto.response.DeleteUserDto;
+import com.shotFormLetter.sFL.domain.member.dto.response.NewAccessToken;
+import com.shotFormLetter.sFL.domain.member.dto.response.NewRefreshToken;
+import com.shotFormLetter.sFL.domain.member.dto.response.TokenUser;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.service.MemberService;
 
-import com.shotFormLetter.sFL.domain.member.dto.RefreshTokenDto;
-import com.shotFormLetter.sFL.domain.post.domain.dto.MessageDto;
-//import com.shotFormLetter.sFL.domain.statistics.domain.entity.Statistics;
-//import com.shotFormLetter.sFL.domain.statistics.domain.service.StatisticsService;
+import com.shotFormLetter.sFL.domain.member.dto.request.RefreshTokenDto;
+import com.shotFormLetter.sFL.domain.post.domain.dto.response.MessageDto;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 @Slf4j
@@ -22,7 +34,6 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
-//    private final StatisticsService statisticsService;
 
     // 회원가입 API
     @PostMapping("/join")
@@ -30,7 +41,6 @@ public class MemberController {
 
         MessageDto messageDto = new MessageDto();
         Long memberId=memberService.join(memberDto);
-//        statisticsService.BasicCreateStatistics(memberId);
         messageDto.setMessage("회원 가입이 완료되었습니다");
         return ResponseEntity.ok(messageDto);
     }
@@ -48,6 +58,7 @@ public class MemberController {
         Member tokenMember=memberService.tokenMember(token);
         return ResponseEntity.ok(memberService.getUserInfo(tokenMember));
     }
+
     @PutMapping("/changeProfile")
     public ResponseEntity<?> profile(@RequestParam(value = "userProfileImage",required = false)MultipartFile userProfileImage,
                                      @RequestParam(value ="userName",required = false, defaultValue = "null")String userName,
@@ -55,18 +66,11 @@ public class MemberController {
                                      @RequestHeader("X-AUTH-TOKEN")String token) {
 
         MessageDto messageDto=new MessageDto();
-
-        if(userProfileImage==null && userName.equals("null")){
-            messageDto.setMessage("변경 사항 없음");
-            return ResponseEntity.ok(messageDto);
-        }
-
         Member tokenMember=memberService.tokenMember(token);
         memberService.change(tokenMember,userProfileImage,userName,isDelete);
         messageDto.setMessage("수정이 완료되었습니다");
         return ResponseEntity.ok(messageDto);
     }
-
 
     @PostMapping("/change-accesstoken")
     public ResponseEntity<?> updateAccessToken(@RequestBody RefreshTokenDto refreshTokenDto){
@@ -93,6 +97,16 @@ public class MemberController {
     @DeleteMapping("/delete-token")
     public ResponseEntity<?> deleteToken(@RequestBody DeleteTokenDto deleteTokenDto){
         return memberService.deleteToken(deleteTokenDto);
+    }
+
+    @GetMapping(value = "/charge", produces = MediaType.TEXT_HTML_VALUE)
+    public String getPaymentPage() throws IOException {
+        Resource resource = new ClassPathResource("static/pay.html");
+        return StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+    }
+    @PostMapping("/adsVisible-service")
+    public void chargePoint(ChargeDto chargeDto){
+        memberService.charge(chargeDto);
     }
 }
 

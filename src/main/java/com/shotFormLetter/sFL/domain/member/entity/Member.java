@@ -1,5 +1,6 @@
 package com.shotFormLetter.sFL.domain.member.entity;
 
+import com.shotFormLetter.sFL.domain.statistics.domain.entity.Statistics;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -36,6 +37,12 @@ public class Member implements UserDetails {
 
     @Column
     private String refreshToken;
+
+    @Column
+    private Boolean isBend;
+
+    @Column
+    private Boolean adsStatus;
 
     @ElementCollection(fetch = FetchType.EAGER) //roles 컬렉션
     @Builder.Default

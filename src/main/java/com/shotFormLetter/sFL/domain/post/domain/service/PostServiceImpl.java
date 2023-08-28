@@ -1,25 +1,22 @@
 package com.shotFormLetter.sFL.domain.post.domain.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotAccessException;
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotFoundException;
 import com.shotFormLetter.sFL.ExceptionHandler.DataNotMatchException;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
-import com.shotFormLetter.sFL.domain.member.repository.MemberRepository;
 import com.shotFormLetter.sFL.domain.music.domain.dto.MusicInfo;
 import com.shotFormLetter.sFL.domain.music.domain.entity.Music;
 import com.shotFormLetter.sFL.domain.music.domain.repository.MusicRepository;
 import com.shotFormLetter.sFL.domain.music.domain.service.MusicService;
-import com.shotFormLetter.sFL.domain.post.domain.dto.*;
+import com.shotFormLetter.sFL.domain.post.domain.dto.response.*;
 import com.shotFormLetter.sFL.domain.post.domain.entity.Post;
 import com.shotFormLetter.sFL.domain.post.domain.repository.PostRepository;
 //import com.shotFormLetter.sFL.domain.post.s3.service.s3Service;
 import com.shotFormLetter.sFL.domain.post.s3.service.s3UploadService;
+import com.shotFormLetter.sFL.domain.statistics.domain.entity.Statistics;
+import com.shotFormLetter.sFL.domain.statistics.domain.repository.StatisticsRepository;
+import com.shotFormLetter.sFL.domain.statistics.domain.service.StatisticsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -32,7 +29,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -44,34 +40,40 @@ public class PostServiceImpl implements PostService{
     private final s3UploadService s3UploadService;
     private final MusicRepository musicRepository;
     private final MusicService musicService;
-
-
-
-    @Override
-    public String createPost(String title, String content, Member member, String media_reference,Integer musicId,String userId,boolean openstatus){
-        Post post= new Post();
-        post.setPostUk(UUID.randomUUID().toString());
-        post.setTitle(title);
-        post.setContent(content);
-        post.setMember(member);
-        post.setUserId(userId);
-        post.setMedia_reference(media_reference);
-        post.setMusicInfo(musicId);
-        post.setCreatedAt(LocalDateTime.now());
-        post.setOpenStatus(openstatus);
-        post.setView(0);
-        post=postRepository.save(post);
-        String postId = post.getPostId().toString();
-        return postId;
-    }
+    private final StatisticsService statisticsService;
+    private final StatisticsRepository statisticsRepository;
 
     @Override
-    public void createLink(List<String> s3Urls,String postId,String userId,String id,List<MultipartFile> newimageList,List<MultipartFile> newthumbnailList){
-        List<String> getusrls= s3UploadService.getUrls(newimageList,s3Urls,postId,id);
-        s3UploadService.uploadThumbnail(newthumbnailList,userId,s3Urls,postId,id);
-        Post post=postRepository.getPostByPostId(Long.parseLong(postId));
-        post.setS3Urls(getusrls);
-        post=postRepository.save(post);
+    public void createPost(String title, String content, Member member, String media_reference,Integer musicId,String userId,boolean openstatus,
+                           List<MultipartFile> newimageList,List<MultipartFile> newthumbnailList){
+
+        LocalDateTime localDateTime=LocalDateTime.now();
+        Post post = Post.builder()
+                .title(title)
+                .content(content)
+                .member(member)
+                .userId(userId)
+                .media_reference(media_reference)
+                .musicInfo(musicId)
+                .createdAt(localDateTime)
+                .postUk(UUID.randomUUID().toString())
+                .openStatus(openstatus)
+                .view(0)
+                .build();
+
+        Post getPost=postRepository.save(post);
+        statisticsService.addStatisticsPost(getPost,LocalDateTime.now(),getPost.getMember());
+
+        if (newimageList!=null && newthumbnailList!=null){
+            Long nowPostId= getPost.getPostId();
+            Post NowPost = postRepository.getPostByPostId(nowPostId);
+
+            List<String> s3urls = new ArrayList<>();
+            s3urls=s3UploadService.getUrls(newimageList,s3urls,NowPost.getPostId().toString(),NowPost.getMember().getId().toString());
+            s3UploadService.uploadThumbnail(newthumbnailList,NowPost.getPostId().toString(),NowPost.getMember().getId().toString());
+            NowPost.setS3Urls(s3urls);
+            postRepository.save(NowPost);
+        }
     }
 
     @Override
@@ -84,8 +86,6 @@ public class PostServiceImpl implements PostService{
             throw new IllegalStateException("게시글 조회 안됨");
         }
 
-        System.out.println(new_media_reference);
-        MediaAndUrlsDto mediaAndUrlsDto=new MediaAndUrlsDto();
         String id=post.getMember().getId().toString();
         List<String> geturls=post.getS3Urls();
         String post_id=postId.toString();
@@ -110,6 +110,7 @@ public class PostServiceImpl implements PostService{
 
 
         if (!delete_index.equals("null")){
+            MediaAndUrlsDto mediaAndUrlsDto=new MediaAndUrlsDto();
             mediaAndUrlsDto=getNewReference(now_reference,delete_index,geturls);
             now_reference=mediaAndUrlsDto.getNow_reference();
             geturls=mediaAndUrlsDto.getS3urls();
@@ -122,7 +123,6 @@ public class PostServiceImpl implements PostService{
         post.setMedia_reference(now_reference);
         post.setMusicInfo(musicId);
         post.setS3Urls(geturls);
-        post.setView(post.getView());
         postRepository.save(post);
         return post;
     }
@@ -165,12 +165,10 @@ public class PostServiceImpl implements PostService{
             }
         }
 
-        System.out.println(geturls);
         MediaAndUrlsDto mediaAndUrlsDto=new MediaAndUrlsDto();
         mediaAndUrlsDto.setNow_reference(nowRef.toString());
         mediaAndUrlsDto.setS3urls(geturls);
         return mediaAndUrlsDto;
-
     }
 
     @Override
@@ -204,15 +202,13 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public PostInfoDto getPostInfo(Long postId,String userId){
+    public PostInfoDto getPostInfo(Long postId, String userId){
         Post post=postRepository.getPostByPostId(postId);
         if(post==null){
             throw new DataNotFoundException("게시글 조회 안됨");
         } else if(!post.getMember().getUsername().equals(userId)){
             throw new DataNotAccessException("접근권한 없음");
         }
-        Integer view=post.getView();
-        post.setView(view+1);
         Music music =musicRepository.getMusicByMusicNumber(post.getMusicInfo());
         MusicInfo musicInfo = music != null ? musicService.getUserMusicInfo(music.getMusicNumber()) : null;
         String media=post.getMedia_reference();
@@ -224,6 +220,7 @@ public class PostServiceImpl implements PostService{
             mediaDtos= make(media,s3urls);
         }
         PostInfoDto postInfoDto =new PostInfoDto();
+        postInfoDto.setPostInfoId(post.getPostId());
         postInfoDto.setUsername(post.getMember().getUserId());
         postInfoDto.setTitle(post.getTitle());
         postInfoDto.setContent(post.getContent());
@@ -231,7 +228,6 @@ public class PostServiceImpl implements PostService{
         postInfoDto.setMusicInfo(musicInfo);
         postInfoDto.setOpenstatus(post.getOpenStatus());
         postInfoDto.setUserProfile(post.getMember().getProfile());
-        postInfoDto.setView(post.getView()+1);
         postInfoDto.setLocalDateTime(post.getCreatedAt());
         postRepository.save(post);
         return postInfoDto;
@@ -262,19 +258,22 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public PostInfoDto openPostDto(String postId){
-        Post post=postRepository.getPostByPostUk(postId);
-        System.out.println("결과");
-        System.out.println(post.getMember().getUserId());
+    public PostInfoDto openPostDto(String postPk){
+        Post post=postRepository.getPostByPostUk(postPk);
         if(post==null){
             throw new DataNotFoundException("게시글 조회 안됨");
-//            throw new IllegalStateException("게시글 조회 안됨");
         }
         if(post.getOpenStatus()==Boolean.FALSE){
             throw new DataNotAccessException("접근권한 없음");
         }
-        Integer view=post.getView();
-        post.setView(view+1);
+        List<Statistics> statistics=statisticsRepository.getListByMemberId(post.getMember().getId());
+        if(statistics == null){
+            statisticsService.addStatisticsPost(post,LocalDateTime.now(),post.getMember());
+        }
+        Integer view=post.getView()+1;
+        post.setView(view);
+        postRepository.save(post);
+        statisticsService.addTimeLine(post,LocalDateTime.now());
         Music music =musicRepository.getMusicByMusicNumber(post.getMusicInfo());
         MusicInfo musicInfo = music != null ? musicService.getUserMusicInfo(music.getMusicNumber()) : null;
         String media=post.getMedia_reference();
@@ -285,17 +284,18 @@ public class PostServiceImpl implements PostService{
         } else{
             mediaDtos= make(media,s3urls);
         }
+
         PostInfoDto postInfoDto =new PostInfoDto();
+        postInfoDto.setPostInfoId(post.getPostId());
         postInfoDto.setUsername(post.getMember().getUserId());
         postInfoDto.setTitle(post.getTitle());
         postInfoDto.setContent(post.getContent());
         postInfoDto.setMediaDto(mediaDtos);
         postInfoDto.setMusicInfo(musicInfo);
         postInfoDto.setUserProfile(post.getMember().getProfile());
-        postInfoDto.setView(post.getView()+1);
+        postInfoDto.setView(view);
         postInfoDto.setOpenstatus(post.getOpenStatus());
         postInfoDto.setLocalDateTime(post.getCreatedAt());
-        postRepository.save(post);
         return postInfoDto;
     }
 
@@ -316,14 +316,7 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public MessageDto getMessage(){
-        MessageDto messageDto=new MessageDto();
-        messageDto.setMessage("삭제 권한 없음");
-        return messageDto;
-    }
-
-    @Override
-    public MessageDto urlMessage(Long getPostId,String userId){
+    public MessageDto urlMessage(Long getPostId, String userId){
         Post post=postRepository.getPostByPostId(getPostId);
         System.out.println("결과:"+post);
         MessageDto messageDto=new MessageDto();
@@ -338,3 +331,29 @@ public class PostServiceImpl implements PostService{
         return messageDto;
     }
 }
+
+
+//        Post post= new Post();
+//        post.setPostUk(UUID.randomUUID().toString());
+//        post.setTitle(title);
+//        post.setContent(content);
+//        post.setMember(member);
+//        post.setUserId(userId);
+//        post.setMedia_reference(media_reference);
+//        post.setMusicInfo(musicId);
+//        post.setCreatedAt(localDateTime);
+//        post.setOpenStatus(openstatus);
+//        post.setView(0);
+//        postRepository.save(post);
+//        String postId = post.getPostId().toString();
+
+
+//    @Override
+//    public void createLink(List<String> s3Urls,String postId,String userId,String id,List<MultipartFile> newimageList,List<MultipartFile> newthumbnailList){
+//        List<String> getusrls= s3UploadService.getUrls(newimageList,s3Urls,postId,id);
+//        s3UploadService.uploadThumbnail(newthumbnailList,postId,id);
+//        Post post=postRepository.getPostByPostId(Long.parseLong(postId));
+//        statisticsService.addStatisticsPost(post,LocalDateTime.now(),post.getMember());
+//        post.setS3Urls(getusrls);
+//        postRepository.save(post);
+//    }

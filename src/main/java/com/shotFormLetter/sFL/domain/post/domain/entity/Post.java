@@ -2,8 +2,8 @@ package com.shotFormLetter.sFL.domain.post.domain.entity;
 
 
 import com.shotFormLetter.sFL.domain.member.entity.Member;
-import lombok.Getter;
-import lombok.Setter;
+import com.shotFormLetter.sFL.domain.statistics.domain.entity.Statistics;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -12,6 +12,9 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Post {
 
     @Id
@@ -51,6 +54,7 @@ public class Post {
 
     @Column(name="open_status")
     private Boolean openStatus;
+
 
     @Column(name="view")
     private Integer view=0;
