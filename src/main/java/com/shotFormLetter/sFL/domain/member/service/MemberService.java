@@ -2,7 +2,7 @@ package com.shotFormLetter.sFL.domain.member.service;
 
 
 import com.shotFormLetter.sFL.ExceptionHandler.*;
-import com.shotFormLetter.sFL.domain.member.controller.ChargeDto;
+import com.shotFormLetter.sFL.domain.member.dto.request.ChargeDto;
 import com.shotFormLetter.sFL.domain.member.dto.request.DeleteTokenDto;
 import com.shotFormLetter.sFL.domain.member.dto.request.LoginDto;
 import com.shotFormLetter.sFL.domain.member.dto.request.MemberDto;
@@ -17,7 +17,6 @@ import com.shotFormLetter.sFL.domain.post.domain.repository.PostRepository;
 
 import com.shotFormLetter.sFL.domain.post.s3.service.s3UploadService;
 
-import com.shotFormLetter.sFL.domain.statistics.domain.service.StatisticsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -244,13 +243,14 @@ public class MemberService {
     }
 
     public void charge(ChargeDto chargeDto){
-        Optional<Member> optionalMember = memberRepository.findById(chargeDto.getId());
-        if (!optionalMember.isPresent()) {
+        Long userSeq = chargeDto.getUserSeq();
+        System.out.println("받은 userSeq : " + userSeq);
+        Member AdsMember = memberRepository.getById(userSeq);
+        if(AdsMember==null){
             throw new DataNotFoundException("찾을 수 없음");
         }
-
-        optionalMember.get().setAdsStatus(true);
-        memberRepository.save(optionalMember.get());
+        AdsMember.setAdsStatus(true);
+        memberRepository.save(AdsMember);
 
     }
 }

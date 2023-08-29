@@ -1,9 +1,6 @@
 package com.shotFormLetter.sFL.domain.member.controller;
 
-import com.shotFormLetter.sFL.domain.member.dto.request.DeleteTokenDto;
-import com.shotFormLetter.sFL.domain.member.dto.request.LoginDto;
-import com.shotFormLetter.sFL.domain.member.dto.request.MemberDto;
-import com.shotFormLetter.sFL.domain.member.dto.request.TokenDto;
+import com.shotFormLetter.sFL.domain.member.dto.request.*;
 import com.shotFormLetter.sFL.domain.member.dto.response.DeleteUserDto;
 import com.shotFormLetter.sFL.domain.member.dto.response.NewAccessToken;
 import com.shotFormLetter.sFL.domain.member.dto.response.NewRefreshToken;
@@ -11,7 +8,6 @@ import com.shotFormLetter.sFL.domain.member.dto.response.TokenUser;
 import com.shotFormLetter.sFL.domain.member.entity.Member;
 import com.shotFormLetter.sFL.domain.member.service.MemberService;
 
-import com.shotFormLetter.sFL.domain.member.dto.request.RefreshTokenDto;
 import com.shotFormLetter.sFL.domain.post.domain.dto.response.MessageDto;
 
 import lombok.RequiredArgsConstructor;
@@ -105,7 +101,7 @@ public class MemberController {
         return StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
     }
     @PostMapping("/adsVisible-service")
-    public void chargePoint(ChargeDto chargeDto){
+    public void chargePoint(@RequestBody  ChargeDto chargeDto){
         memberService.charge(chargeDto);
     }
 }
