@@ -94,12 +94,7 @@ public class MemberController {
     public ResponseEntity<?> deleteToken(@RequestBody DeleteTokenDto deleteTokenDto){
         return memberService.deleteToken(deleteTokenDto);
     }
-
-    @GetMapping(value = "/charge", produces = MediaType.TEXT_HTML_VALUE)
-    public String getPaymentPage() throws IOException {
-        Resource resource = new ClassPathResource("static/pay.html");
-        return StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
-    }
+    
     @PostMapping("/adsVisible-service")
     public void chargePoint(@RequestBody  ChargeDto chargeDto){
         memberService.charge(chargeDto);
