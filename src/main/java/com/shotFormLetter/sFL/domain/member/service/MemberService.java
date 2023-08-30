@@ -76,6 +76,16 @@ public class MemberService {
         }
         if(member.getIsBend()==false){
             throw new DataNotAccessException("정지된 회원입니다");
+        }else if(member.getIsBend()==null){
+            String accessToken = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
+            String refreshToken= jwtTokenProvider.createRefreshToken(member.getUsername());
+            TokenUser tokenUser =new TokenUser();
+            tokenUser.setAccessToken(accessToken);
+            tokenUser.setRefreshToken(refreshToken);
+            tokenUser.setExpiredTokenTime(jwtTokenProvider.getRefreshTokenExpiration(refreshToken));
+            member.setRefreshToken(refreshToken);
+            memberRepository.save(member);
+            return tokenUser;
         }
         String accessToken = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
         String refreshToken= jwtTokenProvider.createRefreshToken(member.getUsername());
