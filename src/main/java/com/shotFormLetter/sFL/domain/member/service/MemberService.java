@@ -76,7 +76,7 @@ public class MemberService {
         }
         if(member.getIsBend()==false){
             throw new DataNotAccessException("정지된 회원입니다");
-        }else if(member.getIsBend()==null){
+        }else if(member.getIsBend()==null || member.getIsBend().equals("null")){
             String accessToken = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
             String refreshToken= jwtTokenProvider.createRefreshToken(member.getUsername());
             TokenUser tokenUser =new TokenUser();
