@@ -39,7 +39,7 @@ public class Member implements UserDetails {
     private String refreshToken;
 
     @Column
-    private Boolean isBend;
+    private Boolean isBend = true;
 
     @Column
     private Boolean adsStatus;

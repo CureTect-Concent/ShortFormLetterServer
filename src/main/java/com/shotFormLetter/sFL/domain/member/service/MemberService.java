@@ -74,9 +74,7 @@ public class MemberService {
         if (!passwordEncoder.matches(loginDto.getPassword(), member.getPassword())) {
             throw new DataNotMatchException("잘못된 비밀번호입니다");
         }
-        if(member.getIsBend()==false){
-            throw new DataNotAccessException("정지된 회원입니다");
-        }else if(member.getIsBend()==null || member.getIsBend().equals("null")){
+        if(member.getIsBend()==null || member.getIsBend().equals("null")){
             String accessToken = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
             String refreshToken= jwtTokenProvider.createRefreshToken(member.getUsername());
             TokenUser tokenUser =new TokenUser();
@@ -87,6 +85,9 @@ public class MemberService {
             member.setIsBend(true);
             memberRepository.save(member);
             return tokenUser;
+        }
+        if(member.getIsBend()==false){
+            throw new DataNotAccessException("정지된 회원입니다");
         }
         String accessToken = jwtTokenProvider.createToken(member.getUsername(), member.getRoles());
         String refreshToken= jwtTokenProvider.createRefreshToken(member.getUsername());
