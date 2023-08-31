@@ -83,6 +83,7 @@ public class MemberService {
             tokenUser.setExpiredTokenTime(jwtTokenProvider.getRefreshTokenExpiration(refreshToken));
             member.setRefreshToken(refreshToken);
             member.setIsBend(true);
+            member.setAdsStatus(false);
             memberRepository.save(member);
             return tokenUser;
         }
